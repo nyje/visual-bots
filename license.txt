@@ -1,0 +1,14 @@
+Textures:
+=========
+Images derived by scaling & editing from:
+    Game-icons.net
+    https://game-icons.net
+    Attribution 3.0 Unported (CC BY 3.0) licence.
+    https://creativecommons.org/licenses/by/3.0/
+
+
+Code:
+=====
+Code created and (c) Nigel Garnett
+    Attribution 3.0 Unported (CC BY 3.0) licence.
+    https://creativecommons.org/licenses/by/3.0/
