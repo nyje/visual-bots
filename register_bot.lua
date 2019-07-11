@@ -1,19 +1,3 @@
-
--------------------------------------
--- callback from bot node can_dig
--------------------------------------
-local function interact(player,pos,isempty)
-    local name = player:get_player_name()
-    local meta = minetest.get_meta(pos)
-    local player_is_owner = ( name == meta:get_string("owner") )
-    local has_server_priv = minetest.check_player_privs(player, "server")
-    if has_server_priv or player_is_owner then
-        return true
-    end
-    return false
-end
-
-
 -------------------------------------
 -- Cute 'unique' bot name generator
 -------------------------------------
@@ -38,22 +22,6 @@ end
 
 
 -------------------------------------
--- callback from bot node on_rightclick
--------------------------------------
-local function bot_restore(pos)
-    local meta = minetest.get_meta(pos)
-    local bot_key = meta:get_string("key")
-    local bot_owner = meta:get_string("owner")
-    local bot_name = meta:get_string("name")
-    if not vbots.bot_info[bot_key] then
-        vbots.bot_info[bot_key] = { owner = bot_owner, pos = pos, name = bot_name}
-        print("Unknown bot restored for "..bot_owner)
-        print(dump(vbots.bot_info))
-    end
-end
-
-
--------------------------------------
 -- callback from bot node after_place_node
 -------------------------------------
 local function bot_init(pos, placer)
@@ -64,7 +32,7 @@ local function bot_init(pos, placer)
     local meta = minetest.get_meta(pos)
     meta:set_string("key", bot_key)
 	meta:set_string("owner", bot_owner)
-	meta:set_string("infotext", "Vbot " .. bot_name .. " owned by " .. bot_owner)
+	meta:set_string("infotext", bot_name .. " (" .. bot_owner .. ")")
 	meta:set_string("name", bot_name)
     meta:set_int("running",0)
 	meta:set_int("panel", 0)
@@ -83,15 +51,63 @@ local function bot_init(pos, placer)
 end
 
 
+-------------------------------------
+-- callback from bot node can_dig
+-------------------------------------
+local function interact(player,pos,isempty)
+    local name = player:get_player_name()
+    local meta = minetest.get_meta(pos)
+    local player_is_owner = ( name == meta:get_string("owner") )
+    local has_server_priv = minetest.check_player_privs(player, "server")
+    if has_server_priv or player_is_owner then
+        return true
+    end
+    return false
+end
+
+
+-------------------------------------
+-- callback from bot node on_rightclick
+-------------------------------------
+local function bot_restore(pos)
+    local meta = minetest.get_meta(pos)
+    local bot_key = meta:get_string("key")
+    local bot_owner = meta:get_string("owner")
+    local bot_name = meta:get_string("name")
+    if not vbots.bot_info[bot_key] then
+        vbots.bot_info[bot_key] = { owner = bot_owner, pos = pos, name = bot_name}
+        meta:set_string("infotext", bot_name .. " (" .. bot_owner .. ")")
+        meta:set_int("running",-1)
+        print(dump(vbots.bot_info))
+    end
+end
+
+-------------------------------------
+-- Clean up bot table and bot storage for player
+-------------------------------------
+local function clean_bot_table()
+    for bot_key,bot_data in pairs( vbots.bot_info) do
+        local meta = minetest.get_meta(bot_data.pos)
+        local bot_name = meta:get_string("name")
+        if bot_name=="" then
+            vbots.bot_info[bot_key] = nil
+        end
+    end
+    print("Cleaned")
+    print(dump(vbots.bot_info))
+end
+
+
+
 minetest.register_node("vbots:bot", {
 	description = "A vbots bot node",
     tiles = {
-		"vbots_gui_up.png",
-		"vbots_types_node.png",
-		"vbots_types_node.png",
-		"vbots_types_node.png",
-		"vbots_types_node.png",
-		"vbots_types_node.png",
+		"vbots_turtle_top1.png",
+		"vbots_turtle_bottom.png",
+		"vbots_turtle_right.png",
+		"vbots_turtle_left.png",
+		"vbots_turtle_tail.png",
+		"vbots_turtle_face.png",
 	},
     stack_max = 1,
     is_ground_content = false,
@@ -99,11 +115,14 @@ minetest.register_node("vbots:bot", {
     legacy_facedir_simple = true,
 	groups = {cracky = 3, snappy = 3, crumbly = 3, oddly_breakable_by_hand = 2},
     on_blast = function() end,
-    can_dig = function(pos,player)
-        return interact(player,pos)
-    end,
 	after_place_node = function(pos, placer, itemstack, pointed_thing)
         bot_init(pos, placer)
+        --local placer_pos = placer:get_pos()
+		--if placer_pos then
+		--	param2 = minetest.dir_to_facedir(vector.subtract(p1, placer_pos))
+        --end
+    end,
+    on construct = function(pos)
     end,
 	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
         local name = clicker:get_player_name()
@@ -115,14 +134,14 @@ minetest.register_node("vbots:bot", {
             minetest.after(0, vbots.show_formspec, clicker, pos)
         end
     end,
+    can_dig = function(pos,player)
+        return interact(player,pos)
+    end,
     on_destruct = function(pos)
-		local meta = minetest.get_meta(pos)
+        local meta = minetest.get_meta(pos)
         local bot_key = meta:get_string("key")
         vbots.bot_info[bot_key] = nil
-        local name = meta:get_string("owner")
-        vbots.clean_bots_for(name)
-        print(name.."'s bots cleaned")
-        print(dump(vbots.bot_info))
+        clean_bot_table()
     end
 })
 

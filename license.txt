@@ -6,6 +6,12 @@ Images derived by scaling & editing from:
     Attribution 3.0 Unported (CC BY 3.0) licence.
     https://creativecommons.org/licenses/by/3.0/
 
+Turtle image derived from
+    Mini Turtle 1.13 by neoshard
+    Attribution 3.0 Unported (CC BY 3.0) licence.
+    alered (current) version
+    (c) Nigel Garnett
+    Attribution 3.0 Unported (CC BY 3.0) licence.
 
 Code:
 =====
