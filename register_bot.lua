@@ -116,13 +116,10 @@ minetest.register_node("vbots:bot", {
 	groups = {cracky = 3, snappy = 3, crumbly = 3, oddly_breakable_by_hand = 2},
     on_blast = function() end,
 	after_place_node = function(pos, placer, itemstack, pointed_thing)
+        local facing = minetest.dir_to_facedir(placer:get_look_dir())
+        print(dump(lookdir))
+        minetest.set_node(pos,{name="vbots:bot", param2=(facing+2)%4})
         bot_init(pos, placer)
-        --local placer_pos = placer:get_pos()
-		--if placer_pos then
-		--	param2 = minetest.dir_to_facedir(vector.subtract(p1, placer_pos))
-        --end
-    end,
-    on construct = function(pos)
     end,
 	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
         local name = clicker:get_player_name()
