@@ -9,15 +9,14 @@ minetest.register_on_leaveplayer(function(player)
             if bot_name~="" then
                 meta:set_string("infotext", bot_name .. " (" ..
                                             bot_data.owner .. ") [Inactive]")
-                meta:set_int("running",-1)
             end
             vbots.bot_info[bot_key] = nil
         end
     end
-    print(dump(vbots.bot_info))
+    --print(dump(vbots.bot_info))
 end)
 
 minetest.register_on_joinplayer(function(player)
-    print(dump(vbots.bot_info))
+    --print(dump(vbots.bot_info))
 end)
 

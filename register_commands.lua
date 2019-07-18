@@ -11,9 +11,9 @@ local register_command = function(itemname,description,image)
         on_drop = function(itemstack, dropper, pos)
             return nil
         end,
-        on_use = function(itemstack, user, pointed_thing)
-            return nil
-        end
+        --on_use = function(itemstack, user, pointed_thing)
+        --    return nil
+        --end
     })
 end
 
