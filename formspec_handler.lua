@@ -30,7 +30,7 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
                 end
                 for f,v in pairs(fields) do
                     local nametable=string.split(f, "_")
-                    if #nametable==2 then
+                    if #nametable>=2 then
                         if nametable[1]=="sub" then
                             meta:set_int("program", nametable[2])
                         end

@@ -51,12 +51,12 @@ end
 local function panel_commands()
     local commands = {
         {"move_forward","move_backward","move_left","move_right","move_up","move_down"},
-        {"turn_clockwise","turn_anticlockwise","turn_random","climb_up","climb_down"},
-        {"number_1","number_2","number_3","number_4","number_5","number_6"},
-        {"case_repeat","case_test","case_end" },
-        {"case_success","case_failure","case_yes","case_no" },
-        {"mode_pause","mode_wait","mode_dig","mode_build","mode_examine","mode_walk","mode_fly"},
-        {},
+        {"turn_clockwise","turn_anticlockwise","turn_random"},
+        {"mode_examine","mode_walk","mode_fly","mode_pause","mode_wait"},
+        {"number_0","number_1","number_2","number_3","number_4"},
+        {"number_5","number_6","number_7","number_8","number_9"},
+        {"case_repeat","case_test","case_end","case_success","case_failure","case_yes","case_no" },
+        {"mode_dig_up","mode_dig","mode_dig_down","mode_build_up","mode_build","mode_build_down"},
         {"run_1","run_2","run_3","run_4","run_5","run_6"}
     }
     local panel = highlight(0,1,7,8,"a","a","f")

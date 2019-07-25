@@ -1,3 +1,5 @@
+
+local STEPTIME = 1
 -------------------------------------
 -- Cute 'unique' bot name generator
 -------------------------------------
@@ -35,6 +37,9 @@ local function bot_init(pos, placer)
 	meta:set_string("infotext", bot_name .. " (" .. bot_owner .. ")")
 	meta:set_string("name", bot_name)
 	meta:set_int("fly", 0)
+	meta:set_int("PC", 0)
+	meta:set_int("PR", 0)
+	meta:set_string("stack","")
     local inv = meta:get_inventory()
     inv:set_size("p0", 56)
     inv:set_size("p1", 56)
@@ -122,13 +127,35 @@ local function bot_turn_random(pos)
     end
 end
 
+local function bot_fly(pos)
+    local node = minetest.get_node(pos)
+    if node.name == "vbots:off" or node.name == "vbots:on" then
+        minetest.swap_node(pos,{name=node.name.."_fly",param2=node.param2})
+        local meta = minetest.get_meta(pos)
+        meta:set_int("fly", 1)
+    end
+end
+
+local function bot_walk(pos)
+    local node = minetest.get_node(pos)
+    if node.name == "vbots:off_fly" or node.name == "vbots:on_fly" then
+        minetest.swap_node(pos,{name=string.split(node.name,"_")[1],param2=node.param2})
+        local meta = minetest.get_meta(pos)
+        meta:set_int("fly", 0)
+        minetest.check_for_falling(pos)
+    end
+end
+
+
 local function move_bot(pos,direction)
     local node = minetest.get_node(pos)
+    local meta = minetest.get_meta(pos)
+    local fly = meta:get_int("fly")
     local dir = minetest.facedir_to_dir(node.param2)
     local newpos
-    if direction == "u" then
+    if direction == "u" and fly == 1 then
         newpos = {x = pos.x, y = pos.y+1, z = pos.z}
-    elseif direction == "d" then
+    elseif direction == "d"  and fly == 1 then
         newpos = {x = pos.x, y = pos.y-1, z = pos.z}
     elseif direction == "f" then
         newpos = {x = pos.x-dir.x, y = pos.y, z = pos.z-dir.z}
@@ -141,18 +168,67 @@ local function move_bot(pos,direction)
         dir = minetest.facedir_to_dir((node.param2-1)%4)
         newpos = {x = pos.x+dir.x, y = pos.y, z = pos.z+dir.z}
     end
-
-    local moveto_node = minetest.get_node(newpos)
-    if moveto_node.name == "air" then
-        local hold = minetest.get_meta(pos):to_table()
-        minetest.set_node(pos,{name="air"})
-        minetest.set_node(newpos,{name=node.name, param2=node.param2})
-        if hold then
-            minetest.get_meta(newpos):from_table(hold)
+    local bot_owner = meta:get_string("owner")
+    if not minetest.is_protected(newpos, bot_owner) then
+        if newpos then
+            local moveto_node = minetest.get_node(newpos)
+            if moveto_node.name == "air" then
+                local hold = meta:to_table()
+                local elapsed = minetest.get_node_timer(pos):get_elapsed()
+                minetest.set_node(pos,{name="air"})
+                minetest.set_node(newpos,{name=node.name, param2=node.param2})
+                minetest.get_node_timer(newpos):set(STEPTIME,0)
+                if hold then
+                    minetest.get_meta(newpos):from_table(hold)
+                end
+            else
+                minetest.sound_play("error",{pos = newpos, gain = 10})
+            end
+            print(dump(minetest.check_for_falling(newpos)))
         end
-    else
-        minetest.sound_play("error",{pos = newpos, gain = 10})
     end
+end
+
+local function bot_dig(pos,digy)
+    local meta = minetest.get_meta(pos)
+    local bot_owner = meta:get_string("owner")
+    local node = minetest.get_node(pos)
+    local dir = minetest.facedir_to_dir(node.param2)
+    local newpos = {x = pos.x-dir.x, y = pos.y+digy, z = pos.z-dir.z}
+    if not minetest.is_protected(newpos, bot_owner) then
+        local newnode = minetest.get_node(newpos)
+        if newnode.name ~= "air" then
+            local inv=minetest.get_inventory({
+                                    type="node",
+                                    pos=pos
+                                })
+            local leftover = inv:add_item("main", ItemStack(newnode.name))
+            minetest.set_node(newpos,{name="air"})
+        end
+    end
+end
+
+local function bot_togglestate(pos)
+    local meta = minetest.get_meta(pos)
+    local node = minetest.get_node(pos)
+    local timer = minetest.get_node_timer(pos)
+    local newname = "nope"
+    if node.name == "vbots:off" or node.name == "vbots:off_fly" then
+        newname = string.gsub(node.name,"off","on")
+        timer:start(1)
+        meta:set_int("PC",STEPTIME)
+        meta:set_int("PR",0)
+        meta:set_string("stack","")
+    elseif node.name == "vbots:on" or node.name == "vbots:on_fly" then
+        newname = string.gsub(node.name, "on","off")
+        timer:stop()
+        bot_walk(pos)
+        meta:set_int("PC",0)
+        meta:set_int("PR",0)
+        meta:set_string("stack","")
+    end
+    --print(node.name.." "..newname)
+    minetest.swap_node(pos,{name=newname, param2=node.param2})
 end
 
 local function punch_bot(pos,player)
@@ -160,7 +236,10 @@ local function punch_bot(pos,player)
     local bot_owner = meta:get_string("owner")
     if bot_owner == player:get_player_name() then
         local item = player:get_wielded_item():get_name()
-        if item == "vbots:move_forward" then
+        print(item)
+        if item == "" then
+            bot_togglestate(pos)
+        elseif item == "vbots:move_forward" then
             move_bot(pos,"f")
         elseif item == "vbots:move_backward" then
             move_bot(pos,"b")
@@ -178,14 +257,73 @@ local function punch_bot(pos,player)
             bot_turn_anticlockwise(pos)
         elseif item == "vbots:turn_random" then
             bot_turn_random(pos)
+        elseif item == "vbots:mode_fly" then
+            bot_fly(pos)
+        elseif item == "vbots:mode_walk" then
+            bot_walk(pos)
+        elseif item == "vbots:mode_dig" then
+            bot_dig(pos,0)
+        elseif item == "vbots:mode_dig_down" then
+            bot_dig(pos,-1)
+        elseif item == "vbots:mode_dig_up" then
+            bot_dig(pos,1)
+        elseif item == "vbots:mode_build" then
+            bot_build(pos,0)
+        elseif item == "vbots:mode_build_down" then
+            bot_build(pos,-1)
+        elseif item == "vbots:mode_build_up" then
+            bot_build(pos,1)
         end
     end
 end
 
+local function bot_parsecommand(pos,item)
+    if item == "vbots:move_forward" then
+        move_bot(pos,"f")
+    elseif item == "vbots:move_backward" then
+        move_bot(pos,"b")
+    elseif item == "vbots:move_up" then
+        move_bot(pos,"u")
+    elseif item == "vbots:move_down" then
+        move_bot(pos,"d")
+    elseif item == "vbots:move_left" then
+        move_bot(pos,"l")
+    elseif item == "vbots:move_right" then
+        move_bot(pos,"r")
+    elseif item == "vbots:turn_clockwise" then
+        bot_turn_clockwise(pos)
+    elseif item == "vbots:turn_anticlockwise" then
+        bot_turn_anticlockwise(pos)
+    elseif item == "vbots:turn_random" then
+        bot_turn_random(pos)
+    elseif item == "vbots:mode_fly" then
+        bot_fly(pos)
+    elseif item == "vbots:mode_walk" then
+        bot_walk(pos)
+    elseif item == "vbots:mode_dig" then
+        bot_dig(pos,0)
+    elseif item == "vbots:mode_dig_down" then
+        bot_dig(pos,-1)
+    elseif item == "vbots:mode_dig_up" then
+        bot_dig(pos,1)
+    elseif item == "vbots:mode_build" then
+        bot_build(pos,0)
+    elseif item == "vbots:mode_build_down" then
+        bot_build(pos,-1)
+    elseif item == "vbots:mode_build_up" then
+        bot_build(pos,1)
+    end
+end
+
+local function bot_handletimer(pos)
+
+end
+
+
 -------------------------------------
 -- Bot definitions
 -------------------------------------
-local function register_bot(node_name,node_desc,node_tiles)
+local function register_bot(node_name,node_desc,node_tiles,node_groups)
     minetest.register_node(node_name, {
         description = node_desc,
         tiles = node_tiles,
@@ -193,7 +331,7 @@ local function register_bot(node_name,node_desc,node_tiles)
         is_ground_content = false,
         paramtype2 = "facedir",
         legacy_facedir_simple = true,
-        groups = {cracky = 3, snappy = 3, crumbly = 3, oddly_breakable_by_hand = 2},
+        groups = node_groups,
         on_blast = function() end,
         after_place_node = function(pos, placer, itemstack, pointed_thing)
             bot_init(pos, placer)
@@ -212,6 +350,37 @@ local function register_bot(node_name,node_desc,node_tiles)
             if interact(clicker,pos) then
                 bot_restore(pos)
                 minetest.after(0, vbots.show_formspec, clicker, pos)
+            end
+        end,
+        on_timer = function(pos, elapsed)
+             local inv=minetest.get_inventory({
+                                            type="node",
+                                            pos=pos
+                                        })
+            local meta = minetest.get_meta(pos)
+            local PC = meta:get_int("PC")
+            local PR = meta:get_int("PR")
+            local invname = "p"..PR
+            local stack = meta:get_string("stack")
+
+            local taken = inv:get_stack(invname, PC)
+            local command = taken:get_name()
+            PC=PC+1
+            while(command == "" and PC<57) do
+                taken = inv:get_stack(invname, PC)
+                command = taken:get_name()
+                PC=PC+1
+            end
+            print( PC.." "..dump(taken:get_name()))
+            meta:set_int("PC",PC)
+            meta:set_int("PR",PR)
+            meta:set_string("stack",stack)
+            if PC<56 then
+                bot_parsecommand(pos, command)
+                return true
+            else
+                bot_togglestate(pos)
+                return false
             end
         end,
         can_dig = function(pos,player)
@@ -233,7 +402,13 @@ register_bot("vbots:off", "Inactive Vbot", {
             "vbots_turtle_left.png",
             "vbots_turtle_tail.png",
             "vbots_turtle_face.png",
-})
+            },
+            {cracky = 1,
+             snappy = 1,
+             crumbly = 1,
+             oddly_breakable_by_hand = 1,
+             falling_node = 1}
+)
 register_bot("vbots:off_fly", "Inactive Flying Vbot", {
             "vbots_turtle_top.png",
             "vbots_turtle_bottom.png",
@@ -241,7 +416,14 @@ register_bot("vbots:off_fly", "Inactive Flying Vbot", {
             "vbots_turtle_left_fly.png",
             "vbots_turtle_tail.png",
             "vbots_turtle_face.png",
-})
+            },
+            {cracky = 1,
+             snappy = 1,
+             crumbly = 1,
+             oddly_breakable_by_hand = 1,
+             not_in_creative_inventory = 1
+            }
+)
 register_bot("vbots:on", "Live Vbot", {
             "vbots_turtle_top4.png",
             "vbots_turtle_bottom.png",
@@ -249,7 +431,14 @@ register_bot("vbots:on", "Live Vbot", {
             "vbots_turtle_left.png",
             "vbots_turtle_tail.png",
             "vbots_turtle_face.png",
-})
+            },
+            {cracky = 1,
+             snappy = 1,
+             crumbly = 1,
+             oddly_breakable_by_hand = 1,
+             not_in_creative_inventory = 1,
+             falling_node = 1}
+)
 register_bot("vbots:on_fly", "Live Flying Vbot", {
             "vbots_turtle_top4.png",
             "vbots_turtle_bottom.png",
@@ -257,10 +446,11 @@ register_bot("vbots:on_fly", "Live Flying Vbot", {
             "vbots_turtle_left_fly.png",
             "vbots_turtle_tail.png",
             "vbots_turtle_face.png",
-})
-
-
---register_bot("vbots:active", "Active vbot", "vbots_turtle_top1.png")
---register_bot("vbots:running", "Running vbot", "vbots_turtle_top4.png")
-
-
+            },
+            {cracky = 1,
+             snappy = 1,
+             crumbly = 1,
+             not_in_creative_inventory = 1,
+             oddly_breakable_by_hand = 1,
+            }
+)
