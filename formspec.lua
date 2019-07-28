@@ -15,14 +15,17 @@ end
 -------------------------------------
 local function button(x,y,image,name,exit)
     if not exit then
-        return "image_button["..x..","..y..";1,1;"..image..";"..name..";]"
+        return  "image_button["..x..","..y..";1,1;"..image..";"..name..";]"..
+                "tooltip["..x..","..y..";1,1;"..name.."]"
     else
-        return "image_button_exit["..x..","..y..";1,1;"..image..";"..name..";]"
+        return "image_button_exit["..x..","..y..";1,1;"..image..";"..name..";]"..
+                "tooltip["..x..","..y..";1,1;"..name.."]"
     end
 end
 
 local function cbutton(x,y,name)
-    return "image_button["..x..","..y..";1,1;vbots_"..name..".png;"..name..";]"
+    return "image_button["..x..","..y..";1,1;vbots_"..name..".png;"..name..";]"..
+           "tooltip["..x..","..y..";1,1;"..name.."]"
 end
 
 local function button_row(x,y,nametable)
@@ -50,13 +53,16 @@ end
 
 local function panel_commands()
     local commands = {
-        {"move_forward","move_backward","move_left","move_right","move_up","move_down"},
+        {"move_forward","move_backward","move_up","move_down"},
         {"turn_clockwise","turn_anticlockwise","turn_random"},
-        {"mode_examine","mode_walk","mode_fly","mode_pause","mode_wait"},
+        {"mode_dig_up","mode_dig","mode_dig_down"},
+        --{"mode_build_up","mode_build","mode_build_down"},
+        --{"case_repeat","case_test","case_end","case_success","case_failure","case_yes","case_no" },
+        --{"mode_examine","mode_pause","mode_wait"},
+        {},
+        {},
         {"number_0","number_1","number_2","number_3","number_4"},
         {"number_5","number_6","number_7","number_8","number_9"},
-        {"case_repeat","case_test","case_end","case_success","case_failure","case_yes","case_no" },
-        {"mode_dig_up","mode_dig","mode_dig_down","mode_build_up","mode_build","mode_build_down"},
         {"run_1","run_2","run_3","run_4","run_5","run_6"}
     }
     local panel = highlight(0,1,7,8,"a","a","f")
@@ -84,17 +90,22 @@ end
 -- Main panel generator
 -------------------------------------
 local function panel_code(pos,program)
-    return button(8,0,"vbots_gui_run.png","run",true)
-           ..button(9,0,"vbots_gui_check.png","check")
-           ..button(10,0,"vbots_gui_load.png","load")
-           ..button(11,0,"vbots_gui_save.png","save")
-           ..highlight(8,0,4,1,"5","5","f")
+    return button(10,0,"vbots_gui_run.png","run",true)
+           ..button(11,0,"vbots_gui_check.png","check")
+           ..button(12,0,"vbots_gui_load.png","load")
+           ..button(13,0,"vbots_gui_save.png","save")
+           ..highlight(10,0,4,1,"5","5","f")
 
            ..button(15,0,"vbots_gui_exit.png","exit",true)
            ..highlight(15,0,1,1,"f","0","0")
 
-           .."list[nodemeta:" .. pos .. ";p"..program..";8,1;7,8;]"
+           ..button(6.5,0,"vbots_gui_trash.png","trash")
+           .."list[detached:bottrash;main;7.5,0;1,1;]"
            .."listring[nodemeta:" .. pos .. ";p"..program.."]"
+           ..highlight(6.5,0,2,1,"0","0","0")
+
+           .."list[nodemeta:" .. pos .. ";p"..program..";8,1;7,8;]"
+           .."listring[nodemeta:" .. pos .. ";trash]"
            ..highlight(8,1,7,8,"f","a","f")
 
            ..button(15,1.5,"vbots_program_0.png","sub_0")

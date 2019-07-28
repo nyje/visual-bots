@@ -19,8 +19,6 @@ end
 
 register_command("move_forward","Move bot forward","vbots_move_forward.png")
 register_command("move_backward","Move bot backward","vbots_move_backward.png")
-register_command("move_left","Move bot to it's left","vbots_move_left.png")
-register_command("move_right","Move bot to it's right","vbots_move_right.png")
 register_command("move_up","Move bot up","vbots_move_up.png")
 register_command("move_down","Move bot down","vbots_move_down.png")
 
@@ -43,10 +41,8 @@ register_command("mode_dig","Dig the block in front","vbots_mode_dig.png")
 register_command("mode_dig_up","Dig the block above the block in front","vbots_mode_dig_up.png")
 register_command("mode_dig_down","Dig the block below the block in front","vbots_mode_dig_down.png")
 register_command("mode_examine","Examine the block in the direction of the next command","vbots_mode_examine.png")
-register_command("mode_fly","Enter fly mode","vbots_mode_fly.png")
 register_command("mode_pause","Wait for a few seconds","vbots_mode_pause.png")
 register_command("mode_wait","Wait until next event","vbots_mode_wait.png")
-register_command("mode_walk","Leave fly mode","vbots_mode_walk.png")
 
 register_command("number_1","1","vbots_number_1.png")
 register_command("number_2","2","vbots_number_2.png")

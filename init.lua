@@ -8,6 +8,15 @@ vbots={}
 vbots.modpath = minetest.get_modpath("vbots")
 vbots.bot_info = {}
 
+local trashInv = minetest.create_detached_inventory(
+                    "bottrash",
+                    {
+                       on_put = function(inv, toList, toIndex, stack, player)
+                          inv:set_stack(toList, toIndex, ItemStack(nil))
+                       end
+                    })
+trashInv:set_size("main", 1)
+
 -------------------------------------
 -- Generate 32 bit key for formspec identification
 -------------------------------------

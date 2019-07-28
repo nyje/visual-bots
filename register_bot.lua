@@ -1,5 +1,5 @@
 
-local STEPTIME = 1
+local STEPTIME = 0.3
 -------------------------------------
 -- Cute 'unique' bot name generator
 -------------------------------------
@@ -22,6 +22,33 @@ local function bot_namer()
            after[math.random(#after)]
 end
 
+local function push_state(pos,a,b,c)
+    local meta = minetest.get_meta(pos)
+    local stack = meta:get_string("stack")
+    local push = a..","..b..","..c..","
+    meta:set_string("stack", push..stack)
+end
+
+local function pull_state(pos)
+    local meta = minetest.get_meta(pos)
+    local stack = meta:get_string("stack")
+    local newstack = ""
+    local heap = string.split(stack,",")
+    if #heap>2 then
+        meta:set_int("PC",heap[1])
+        meta:set_int("PR",heap[2])
+        meta:set_int("repeat",heap[3])
+        if #heap>3 then
+            for a = 4,#heap do
+                newstack = newstack .. heap[a] .. ","
+            end
+            meta:set_string("stack",newstack)
+        else
+            meta:set_string("stack","")
+        end
+    end
+end
+
 
 -------------------------------------
 -- callback from bot node after_place_node
@@ -32,11 +59,12 @@ local function bot_init(pos, placer)
     local bot_name = bot_namer()
     vbots.bot_info[bot_key] = { owner = bot_owner, pos = pos, name = bot_name}
     local meta = minetest.get_meta(pos)
+    meta:set_int("program",0)
+    meta:set_int("panel",0)
     meta:set_string("key", bot_key)
 	meta:set_string("owner", bot_owner)
 	meta:set_string("infotext", bot_name .. " (" .. bot_owner .. ")")
 	meta:set_string("name", bot_name)
-	meta:set_int("fly", 0)
 	meta:set_int("PC", 0)
 	meta:set_int("PR", 0)
 	meta:set_string("stack","")
@@ -49,6 +77,8 @@ local function bot_init(pos, placer)
     inv:set_size("p5", 56)
     inv:set_size("p6", 56)
     inv:set_size("main", 32)
+    inv:set_size("trash", 1)
+    --print(dump(inv))
     --print(bot_owner.." places bot")
     --print(dump(vbots.bot_info))
 end
@@ -127,45 +157,18 @@ local function bot_turn_random(pos)
     end
 end
 
-local function bot_fly(pos)
-    local node = minetest.get_node(pos)
-    if node.name == "vbots:off" or node.name == "vbots:on" then
-        minetest.swap_node(pos,{name=node.name.."_fly",param2=node.param2})
-        local meta = minetest.get_meta(pos)
-        meta:set_int("fly", 1)
-    end
-end
-
-local function bot_walk(pos)
-    local node = minetest.get_node(pos)
-    if node.name == "vbots:off_fly" or node.name == "vbots:on_fly" then
-        minetest.swap_node(pos,{name=string.split(node.name,"_")[1],param2=node.param2})
-        local meta = minetest.get_meta(pos)
-        meta:set_int("fly", 0)
-        minetest.check_for_falling(pos)
-    end
-end
-
-
 local function move_bot(pos,direction)
     local node = minetest.get_node(pos)
     local meta = minetest.get_meta(pos)
-    local fly = meta:get_int("fly")
     local dir = minetest.facedir_to_dir(node.param2)
     local newpos
-    if direction == "u" and fly == 1 then
+    if direction == "u" then
         newpos = {x = pos.x, y = pos.y+1, z = pos.z}
-    elseif direction == "d"  and fly == 1 then
+    elseif direction == "d" then
         newpos = {x = pos.x, y = pos.y-1, z = pos.z}
     elseif direction == "f" then
         newpos = {x = pos.x-dir.x, y = pos.y, z = pos.z-dir.z}
     elseif direction == "b" then
-        newpos = {x = pos.x+dir.x, y = pos.y, z = pos.z+dir.z}
-    elseif direction == "l" then
-        dir = minetest.facedir_to_dir((node.param2+1)%4)
-        newpos = {x = pos.x+dir.x, y = pos.y, z = pos.z+dir.z}
-    elseif direction == "r" then
-        dir = minetest.facedir_to_dir((node.param2-1)%4)
         newpos = {x = pos.x+dir.x, y = pos.y, z = pos.z+dir.z}
     end
     local bot_owner = meta:get_string("owner")
@@ -184,7 +187,7 @@ local function move_bot(pos,direction)
             else
                 minetest.sound_play("error",{pos = newpos, gain = 10})
             end
-            print(dump(minetest.check_for_falling(newpos)))
+            minetest.check_for_falling(newpos)
         end
     end
 end
@@ -194,41 +197,54 @@ local function bot_dig(pos,digy)
     local bot_owner = meta:get_string("owner")
     local node = minetest.get_node(pos)
     local dir = minetest.facedir_to_dir(node.param2)
-    local newpos = {x = pos.x-dir.x, y = pos.y+digy, z = pos.z-dir.z}
-    if not minetest.is_protected(newpos, bot_owner) then
-        local newnode = minetest.get_node(newpos)
-        if newnode.name ~= "air" then
+    local digpos
+    if digy == 0 then
+        digpos = {x = pos.x-dir.x, y = pos.y, z = pos.z-dir.z}
+    else
+        digpos = {x = pos.x, y = pos.y+digy, z = pos.z}
+    end
+    if not minetest.is_protected(digpos, bot_owner) then
+        local drop = minetest.get_node(digpos)
+        if drop.name ~= "air" then
             local inv=minetest.get_inventory({
                                     type="node",
                                     pos=pos
                                 })
-            local leftover = inv:add_item("main", ItemStack(newnode.name))
-            minetest.set_node(newpos,{name="air"})
+            local leftover = inv:add_item("main", ItemStack(drop.name))
+            minetest.set_node(digpos,{name="air"})
         end
     end
 end
 
-local function bot_togglestate(pos)
+vbots.bot_togglestate = function(pos,mode)
     local meta = minetest.get_meta(pos)
     local node = minetest.get_node(pos)
     local timer = minetest.get_node_timer(pos)
-    local newname = "nope"
-    if node.name == "vbots:off" or node.name == "vbots:off_fly" then
-        newname = string.gsub(node.name,"off","on")
+    local newname
+    if not mode then
+        if node.name == "vbots:off" then
+            mode = "on"
+        elseif node.name == "vbots:on" then
+            mode = "off"
+        end
+    end
+    if mode == "on" then
+        newname = "vbots:on"
         timer:start(1)
         meta:set_int("PC",STEPTIME)
         meta:set_int("PR",0)
         meta:set_string("stack","")
-    elseif node.name == "vbots:on" or node.name == "vbots:on_fly" then
-        newname = string.gsub(node.name, "on","off")
+    elseif mode == "off" then
+        newname = "vbots:off"
         timer:stop()
-        bot_walk(pos)
         meta:set_int("PC",0)
         meta:set_int("PR",0)
         meta:set_string("stack","")
     end
     --print(node.name.." "..newname)
-    minetest.swap_node(pos,{name=newname, param2=node.param2})
+    if newname then
+        minetest.swap_node(pos,{name=newname, param2=node.param2})
+    end
 end
 
 local function punch_bot(pos,player)
@@ -236,9 +252,8 @@ local function punch_bot(pos,player)
     local bot_owner = meta:get_string("owner")
     if bot_owner == player:get_player_name() then
         local item = player:get_wielded_item():get_name()
-        print(item)
         if item == "" then
-            bot_togglestate(pos)
+            vbots.bot_togglestate(pos)
         elseif item == "vbots:move_forward" then
             move_bot(pos,"f")
         elseif item == "vbots:move_backward" then
@@ -247,20 +262,12 @@ local function punch_bot(pos,player)
             move_bot(pos,"u")
         elseif item == "vbots:move_down" then
             move_bot(pos,"d")
-        elseif item == "vbots:move_left" then
-            move_bot(pos,"l")
-        elseif item == "vbots:move_right" then
-            move_bot(pos,"r")
         elseif item == "vbots:turn_clockwise" then
             bot_turn_clockwise(pos)
         elseif item == "vbots:turn_anticlockwise" then
             bot_turn_anticlockwise(pos)
         elseif item == "vbots:turn_random" then
             bot_turn_random(pos)
-        elseif item == "vbots:mode_fly" then
-            bot_fly(pos)
-        elseif item == "vbots:mode_walk" then
-            bot_walk(pos)
         elseif item == "vbots:mode_dig" then
             bot_dig(pos,0)
         elseif item == "vbots:mode_dig_down" then
@@ -286,26 +293,21 @@ local function bot_parsecommand(pos,item)
         move_bot(pos,"u")
     elseif item == "vbots:move_down" then
         move_bot(pos,"d")
-    elseif item == "vbots:move_left" then
-        move_bot(pos,"l")
-    elseif item == "vbots:move_right" then
-        move_bot(pos,"r")
     elseif item == "vbots:turn_clockwise" then
         bot_turn_clockwise(pos)
     elseif item == "vbots:turn_anticlockwise" then
         bot_turn_anticlockwise(pos)
     elseif item == "vbots:turn_random" then
         bot_turn_random(pos)
-    elseif item == "vbots:mode_fly" then
-        bot_fly(pos)
-    elseif item == "vbots:mode_walk" then
-        bot_walk(pos)
     elseif item == "vbots:mode_dig" then
         bot_dig(pos,0)
+        move_bot(pos,"f")
     elseif item == "vbots:mode_dig_down" then
         bot_dig(pos,-1)
+        move_bot(pos,"d")
     elseif item == "vbots:mode_dig_up" then
         bot_dig(pos,1)
+        move_bot(pos,"u")
     elseif item == "vbots:mode_build" then
         bot_build(pos,0)
     elseif item == "vbots:mode_build_down" then
@@ -313,10 +315,75 @@ local function bot_parsecommand(pos,item)
     elseif item == "vbots:mode_build_up" then
         bot_build(pos,1)
     end
+    local item_parts = string.split(item,"_")
+    if item_parts[1]=="vbots:run" then
+        local meta = minetest.get_meta(pos)
+        local PC = meta:get_int("PC")
+        local PR = meta:get_int("PR")
+        local R = meta:get_int("repeat")
+        print("Pushing state...")
+        push_state(pos,PC,PR,R)
+        meta:set_int("PR", item_parts[2])
+        meta:set_int("PC", 0)
+        meta:set_int("repeat", 0)
+        print("after update PR:"..PR..
+          " PC:"..meta:get_int("PC")..
+          " R:"..meta:get_int("repeat"))
+    end
 end
 
-local function bot_handletimer(pos)
 
+local function bot_handletimer(pos)
+    local inv=minetest.get_inventory({type="node", pos=pos})
+    local meta = minetest.get_meta(pos)
+    local PC = meta:get_int("PC")
+    local PR = meta:get_int("PR")
+    local invname = "p"..PR
+    local stack = meta:get_string("stack")
+
+    local taken = inv:get_stack(invname, PC)
+    local command = taken:get_name()
+
+    local todo = meta:get_int("repeat")
+    if todo == 0 then
+        PC=PC+1
+        while(command == "" and PC<57) do
+            taken = inv:get_stack(invname, PC)
+            command = taken:get_name()
+            PC=PC+1
+        end
+        local hasarg = string.split(inv:get_stack(invname, PC):get_name(),"_")
+        -- print( PC.." "..dump(hasarg))
+        if hasarg[1] == "vbots:number" then
+            if tonumber(hasarg[2])>1 then
+                meta:set_int("repeat", hasarg[2]-1)
+            end
+            PC=PC+1
+        end
+    else
+        command = inv:get_stack(invname, PC-2):get_name()
+        meta:set_int("repeat", todo-1)
+    end
+    meta:set_int("PC",PC)
+    meta:set_int("PR",PR)
+    meta:set_string("stack",stack)
+    if PC<56 then
+        print("mainloop PR:"..meta:get_int("PR")..
+          " PC:"..meta:get_int("PC")..
+          " R:"..meta:get_int("repeat")..
+          " : "..command)
+        bot_parsecommand(pos, command)
+        return true
+    else
+        print("Program "..PR.." ending.")
+        if PR ~=0 then
+            pull_state(pos)
+            return true
+        else
+            vbots.bot_togglestate(pos)
+            return false
+        end
+    end
 end
 
 
@@ -353,35 +420,7 @@ local function register_bot(node_name,node_desc,node_tiles,node_groups)
             end
         end,
         on_timer = function(pos, elapsed)
-             local inv=minetest.get_inventory({
-                                            type="node",
-                                            pos=pos
-                                        })
-            local meta = minetest.get_meta(pos)
-            local PC = meta:get_int("PC")
-            local PR = meta:get_int("PR")
-            local invname = "p"..PR
-            local stack = meta:get_string("stack")
-
-            local taken = inv:get_stack(invname, PC)
-            local command = taken:get_name()
-            PC=PC+1
-            while(command == "" and PC<57) do
-                taken = inv:get_stack(invname, PC)
-                command = taken:get_name()
-                PC=PC+1
-            end
-            print( PC.." "..dump(taken:get_name()))
-            meta:set_int("PC",PC)
-            meta:set_int("PR",PR)
-            meta:set_string("stack",stack)
-            if PC<56 then
-                bot_parsecommand(pos, command)
-                return true
-            else
-                bot_togglestate(pos)
-                return false
-            end
+            return bot_handletimer(pos)
         end,
         can_dig = function(pos,player)
             return interact(player,pos)
@@ -407,22 +446,7 @@ register_bot("vbots:off", "Inactive Vbot", {
              snappy = 1,
              crumbly = 1,
              oddly_breakable_by_hand = 1,
-             falling_node = 1}
-)
-register_bot("vbots:off_fly", "Inactive Flying Vbot", {
-            "vbots_turtle_top.png",
-            "vbots_turtle_bottom.png",
-            "vbots_turtle_right_fly.png",
-            "vbots_turtle_left_fly.png",
-            "vbots_turtle_tail.png",
-            "vbots_turtle_face.png",
-            },
-            {cracky = 1,
-             snappy = 1,
-             crumbly = 1,
-             oddly_breakable_by_hand = 1,
-             not_in_creative_inventory = 1
-            }
+             }
 )
 register_bot("vbots:on", "Live Vbot", {
             "vbots_turtle_top4.png",
@@ -437,20 +461,5 @@ register_bot("vbots:on", "Live Vbot", {
              crumbly = 1,
              oddly_breakable_by_hand = 1,
              not_in_creative_inventory = 1,
-             falling_node = 1}
-)
-register_bot("vbots:on_fly", "Live Flying Vbot", {
-            "vbots_turtle_top4.png",
-            "vbots_turtle_bottom.png",
-            "vbots_turtle_right_fly.png",
-            "vbots_turtle_left_fly.png",
-            "vbots_turtle_tail.png",
-            "vbots_turtle_face.png",
-            },
-            {cracky = 1,
-             snappy = 1,
-             crumbly = 1,
-             not_in_creative_inventory = 1,
-             oddly_breakable_by_hand = 1,
-            }
+             }
 )
