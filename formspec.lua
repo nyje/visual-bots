@@ -60,8 +60,8 @@ local function panel_commands()
         --{"case_repeat","case_test","case_end","case_success","case_failure","case_yes","case_no" },
         --{"mode_examine","mode_pause","mode_wait"},
         {},
-        {"number_0","number_1","number_2","number_3","number_4"},
-        {"number_5","number_6","number_7","number_8","number_9"},
+        {"number_2","number_3","number_4","number_5"},
+        {"number_6","number_7","number_8","number_9"},
         {"run_1","run_2","run_3","run_4","run_5","run_6"}
     }
     local panel = highlight(0,1,7,8,"a","a","f")

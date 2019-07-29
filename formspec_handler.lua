@@ -29,6 +29,12 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
             if fields.commands then
                 meta:set_int("panel", 0)
             end
+            if fields.save then
+                --
+            end
+            if fields.load then
+                --
+            end
             if fields.player_inv then
                 meta:set_int("panel", 1)
             end
@@ -62,7 +68,7 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
                         end
                     end
                 end
-                minetest.after(0, vbots.show_formspec, player, bot_data.pos)
+                minetest.after(0.2, vbots.show_formspec, player, bot_data.pos)
             end
         end
     end

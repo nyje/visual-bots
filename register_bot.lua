@@ -1,5 +1,4 @@
 
-local STEPTIME = 0.3
 -------------------------------------
 -- Cute 'unique' bot name generator
 -------------------------------------
@@ -180,7 +179,7 @@ local function move_bot(pos,direction)
                 local elapsed = minetest.get_node_timer(pos):get_elapsed()
                 minetest.set_node(pos,{name="air"})
                 minetest.set_node(newpos,{name=node.name, param2=node.param2})
-                minetest.get_node_timer(newpos):set(STEPTIME,0)
+                minetest.get_node_timer(newpos):set(vbots.steptime,0)
                 if hold then
                     minetest.get_meta(newpos):from_table(hold)
                 end
@@ -239,7 +238,7 @@ local function bot_build(pos,buildy)
             a=a+1
         end
         if found then
-            print(found)
+            -- print(found)
             minetest.set_node(buildpos,{name=found})
         end
     end
@@ -300,8 +299,6 @@ local function punch_bot(pos,player)
         local item = player:get_wielded_item():get_name()
         if item == "" then
             vbots.bot_togglestate(pos)
-        else
-            bot_parsecommand(pos,item)
         end
     end
 end
@@ -341,14 +338,14 @@ local function bot_handletimer(pos)
     meta:set_int("PR",PR)
     meta:set_string("stack",stack)
     if PC<56 then
-        print("mainloop PR:"..meta:get_int("PR")..
-          " PC:"..meta:get_int("PC")..
-          " R:"..meta:get_int("repeat")..
-          " : "..command)
+        -- print("mainloop PR:"..meta:get_int("PR")..
+        --   " PC:"..meta:get_int("PC")..
+        --   " R:"..meta:get_int("repeat")..
+        --   " : "..command)
         bot_parsecommand(pos, command)
         return true
     else
-        print("Program "..PR.." ending.")
+        -- print("Program "..PR.." ending.")
         if PR ~=0 then
             pull_state(pos)
             return true

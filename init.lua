@@ -7,6 +7,8 @@
 vbots={}
 vbots.modpath = minetest.get_modpath("vbots")
 vbots.bot_info = {}
+vbots.storage = minetest.get_mod_storage()
+vbots.steptime = 0.3
 
 local trashInv = minetest.create_detached_inventory(
                     "bottrash",
@@ -16,7 +18,9 @@ local trashInv = minetest.create_detached_inventory(
                        end
                     })
 trashInv:set_size("main", 1)
-local STEPTIME = 0.3
+
+
+
 -------------------------------------
 -- Generate 32 bit key for formspec identification
 -------------------------------------
@@ -45,7 +49,7 @@ vbots.bot_togglestate = function(pos,mode)
     if mode == "on" then
         newname = "vbots:on"
         timer:start(1)
-        meta:set_int("PC",STEPTIME)
+        meta:set_int("PC",vbots.steptime)
         meta:set_int("PR",0)
         meta:set_string("stack","")
     elseif mode == "off" then
