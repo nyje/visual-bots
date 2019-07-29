@@ -91,8 +91,8 @@ end
 local function panel_code(pos,program)
     return button(10,0,"vbots_gui_run.png","run",true)
            ..button(11,0,"vbots_gui_check.png","check")
-           ..button(12,0,"vbots_gui_load.png","load")
-           ..button(13,0,"vbots_gui_save.png","save")
+           ..button(12,0,"vbots_gui_load.png","load",true)
+           ..button(13,0,"vbots_gui_save.png","save",true)
            ..highlight(10,0,4,1,"5","5","f")
 
            ..button(15,0,"vbots_gui_exit.png","exit",true)

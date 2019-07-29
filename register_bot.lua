@@ -59,14 +59,23 @@ local function bot_init(pos, placer)
     vbots.bot_info[bot_key] = { owner = bot_owner, pos = pos, name = bot_name}
     local meta = minetest.get_meta(pos)
     meta:set_int("program",0)
+    meta:mark_as_private("program")
     meta:set_int("panel",0)
+    meta:mark_as_private("panel")
     meta:set_string("key", bot_key)
+    meta:mark_as_private("key")
 	meta:set_string("owner", bot_owner)
+    meta:mark_as_private("owner")
 	meta:set_string("infotext", bot_name .. " (" .. bot_owner .. ")")
+    meta:mark_as_private("infotext")
 	meta:set_string("name", bot_name)
+    meta:mark_as_private("name")
 	meta:set_int("PC", 0)
+    meta:mark_as_private("PC")
 	meta:set_int("PR", 0)
+    meta:mark_as_private("PR")
 	meta:set_string("stack","")
+    meta:mark_as_private("stack")
     local inv = meta:get_inventory()
     inv:set_size("p0", 56)
     inv:set_size("p1", 56)
@@ -369,7 +378,7 @@ local function register_bot(node_name,node_desc,node_tiles,node_groups)
         paramtype2 = "facedir",
         legacy_facedir_simple = true,
         groups = node_groups,
-        light = core.MAXLIGHT,
+        light_source = 14,
         on_blast = function() end,
         after_place_node = function(pos, placer, itemstack, pointed_thing)
             bot_init(pos, placer)

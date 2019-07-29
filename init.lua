@@ -7,7 +7,6 @@
 vbots={}
 vbots.modpath = minetest.get_modpath("vbots")
 vbots.bot_info = {}
-vbots.storage = minetest.get_mod_storage()
 vbots.steptime = 0.3
 
 local trashInv = minetest.create_detached_inventory(
@@ -18,8 +17,51 @@ local trashInv = minetest.create_detached_inventory(
                        end
                     })
 trashInv:set_size("main", 1)
+local mod_storage = minetest.get_mod_storage()
 
 
+vbots.save = function(pos)
+    local meta = minetest.get_meta(pos)
+    local botname = meta:get_string("name")
+    local meta_table = meta:to_table()
+    local inv_list = {}
+    for i,t in pairs(meta_table.inventory) do
+        for _,s in pairs(t) do
+            if s and s:get_count()>0 then
+                inv_list[#inv_list+1] = i.." "..s:get_name().." "..s:get_count()
+            end
+        end
+    end
+    local clean_meta = {meta_table.fields, inv_list}
+    mod_storage:set_string(botname,minetest.serialize(clean_meta))
+end
+
+vbots.load = function(pos,player)
+    local data = mod_storage:to_table().fields
+    local bot_list = ""
+    for n,d in pairs(data) do
+        bot_list = bot_list..n..","
+    end
+    bot_list = bot_list:sub(1,#bot_list-1)
+    local formspec = "size[5,9;]"..
+                     "textlist[0,0;5,9;saved;"..bot_list.."]"
+    minetest.show_formspec(player:get_player_name(), "loadbot", formspec)
+    --print(bot_list)
+end
+
+minetest.register_on_player_receive_fields(function(player, key, fields)
+    local data = mod_storage:to_table().fields
+    local bot_list = {}
+    for n,d in pairs(data) do
+        bot_list[#bot_list+1] = n
+    end
+    if key == "loadbot" then
+        minetest.close_formspec(player:get_player_name(), "loadbot")
+        if fields.saved then
+            print( bot_list[tonumber(string.split(fields.saved,":")[2])] )
+        end
+    end
+end)
 
 -------------------------------------
 -- Generate 32 bit key for formspec identification

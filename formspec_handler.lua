@@ -23,17 +23,17 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
             if fields.run then
                 minetest.after(0, vbots.bot_togglestate, bot_data.pos, "on")
             end
+            if fields.save then
+                vbots.save(bot_data.pos)
+            end
+            if fields.load then
+                vbots.load(bot_data.pos,player)
+            end
             if fields.quit=="true" then
                 return
             end
             if fields.commands then
                 meta:set_int("panel", 0)
-            end
-            if fields.save then
-                --
-            end
-            if fields.load then
-                --
             end
             if fields.player_inv then
                 meta:set_int("panel", 1)
