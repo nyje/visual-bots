@@ -369,6 +369,7 @@ local function register_bot(node_name,node_desc,node_tiles,node_groups)
         paramtype2 = "facedir",
         legacy_facedir_simple = true,
         groups = node_groups,
+        light = core.MAXLIGHT,
         on_blast = function() end,
         after_place_node = function(pos, placer, itemstack, pointed_thing)
             bot_init(pos, placer)
