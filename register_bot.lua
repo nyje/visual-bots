@@ -216,70 +216,31 @@ local function bot_dig(pos,digy)
     end
 end
 
-vbots.bot_togglestate = function(pos,mode)
-    local meta = minetest.get_meta(pos)
-    local node = minetest.get_node(pos)
-    local timer = minetest.get_node_timer(pos)
-    local newname
-    if not mode then
-        if node.name == "vbots:off" then
-            mode = "on"
-        elseif node.name == "vbots:on" then
-            mode = "off"
-        end
-    end
-    if mode == "on" then
-        newname = "vbots:on"
-        timer:start(1)
-        meta:set_int("PC",STEPTIME)
-        meta:set_int("PR",0)
-        meta:set_string("stack","")
-    elseif mode == "off" then
-        newname = "vbots:off"
-        timer:stop()
-        meta:set_int("PC",0)
-        meta:set_int("PR",0)
-        meta:set_string("stack","")
-    end
-    --print(node.name.." "..newname)
-    if newname then
-        minetest.swap_node(pos,{name=newname, param2=node.param2})
-    end
-end
-
-local function punch_bot(pos,player)
+local function bot_build(pos,buildy)
     local meta = minetest.get_meta(pos)
     local bot_owner = meta:get_string("owner")
-    if bot_owner == player:get_player_name() then
-        local item = player:get_wielded_item():get_name()
-        if item == "" then
-            vbots.bot_togglestate(pos)
-        elseif item == "vbots:move_forward" then
-            move_bot(pos,"f")
-        elseif item == "vbots:move_backward" then
-            move_bot(pos,"b")
-        elseif item == "vbots:move_up" then
-            move_bot(pos,"u")
-        elseif item == "vbots:move_down" then
-            move_bot(pos,"d")
-        elseif item == "vbots:turn_clockwise" then
-            bot_turn_clockwise(pos)
-        elseif item == "vbots:turn_anticlockwise" then
-            bot_turn_anticlockwise(pos)
-        elseif item == "vbots:turn_random" then
-            bot_turn_random(pos)
-        elseif item == "vbots:mode_dig" then
-            bot_dig(pos,0)
-        elseif item == "vbots:mode_dig_down" then
-            bot_dig(pos,-1)
-        elseif item == "vbots:mode_dig_up" then
-            bot_dig(pos,1)
-        elseif item == "vbots:mode_build" then
-            bot_build(pos,0)
-        elseif item == "vbots:mode_build_down" then
-            bot_build(pos,-1)
-        elseif item == "vbots:mode_build_up" then
-            bot_build(pos,1)
+    local node = minetest.get_node(pos)
+    local dir = minetest.facedir_to_dir(node.param2)
+    local inv=minetest.get_inventory({type="node", pos=pos})
+    local buildpos
+    if buildy == 0 then
+        buildpos = {x = pos.x+dir.x, y = pos.y, z = pos.z+dir.z}
+    else
+        buildpos = {x = pos.x, y = pos.y+buildy, z = pos.z}
+    end
+    if not minetest.is_protected(buildpos, bot_owner) then
+        local content = inv:get_list("main")
+        local a = 1
+        local found = nil
+        while( a<57 and not found) do
+            if not content[a]:is_empty() then
+                found = content[a]:get_name()
+            end
+            a=a+1
+        end
+        if found then
+            print(found)
+            minetest.set_node(buildpos,{name=found})
         end
     end
 end
@@ -321,17 +282,29 @@ local function bot_parsecommand(pos,item)
         local PC = meta:get_int("PC")
         local PR = meta:get_int("PR")
         local R = meta:get_int("repeat")
-        print("Pushing state...")
+        -- print("Pushing state...")
         push_state(pos,PC,PR,R)
         meta:set_int("PR", item_parts[2])
         meta:set_int("PC", 0)
         meta:set_int("repeat", 0)
-        print("after update PR:"..PR..
-          " PC:"..meta:get_int("PC")..
-          " R:"..meta:get_int("repeat"))
+--         print("after update PR:"..PR..
+--           " PC:"..meta:get_int("PC")..
+--           " R:"..meta:get_int("repeat"))
     end
 end
 
+local function punch_bot(pos,player)
+    local meta = minetest.get_meta(pos)
+    local bot_owner = meta:get_string("owner")
+    if bot_owner == player:get_player_name() then
+        local item = player:get_wielded_item():get_name()
+        if item == "" then
+            vbots.bot_togglestate(pos)
+        else
+            bot_parsecommand(pos,item)
+        end
+    end
+end
 
 local function bot_handletimer(pos)
     local inv=minetest.get_inventory({type="node", pos=pos})
