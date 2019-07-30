@@ -58,24 +58,7 @@ local function bot_init(pos, placer)
     local bot_name = bot_namer()
     vbots.bot_info[bot_key] = { owner = bot_owner, pos = pos, name = bot_name}
     local meta = minetest.get_meta(pos)
-    meta:set_int("program",0)
-    meta:mark_as_private("program")
-    meta:set_int("panel",0)
-    meta:mark_as_private("panel")
-    meta:set_string("key", bot_key)
-    meta:mark_as_private("key")
-	meta:set_string("owner", bot_owner)
-    meta:mark_as_private("owner")
 	meta:set_string("infotext", bot_name .. " (" .. bot_owner .. ")")
-    meta:mark_as_private("infotext")
-	meta:set_string("name", bot_name)
-    meta:mark_as_private("name")
-	meta:set_int("PC", 0)
-    meta:mark_as_private("PC")
-	meta:set_int("PR", 0)
-    meta:mark_as_private("PR")
-	meta:set_string("stack","")
-    meta:mark_as_private("stack")
     local inv = meta:get_inventory()
     inv:set_size("p0", 56)
     inv:set_size("p1", 56)
@@ -86,9 +69,27 @@ local function bot_init(pos, placer)
     inv:set_size("p6", 56)
     inv:set_size("main", 32)
     inv:set_size("trash", 1)
-    --print(dump(inv))
-    --print(bot_owner.." places bot")
-    --print(dump(vbots.bot_info))
+
+    meta:set_int("program",0)
+    meta:mark_as_private("program")
+    meta:set_string("home",minetest.serialize(pos))
+    meta:mark_as_private("home")
+    meta:set_int("panel",0)
+    meta:mark_as_private("panel")
+    meta:set_int("steptime",1)
+    meta:mark_as_private("steptime")
+    meta:set_string("key", bot_key)
+    meta:mark_as_private("key")
+	meta:set_string("owner", bot_owner)
+    meta:mark_as_private("owner")
+	meta:set_string("name", bot_name)
+    meta:mark_as_private("name")
+	meta:set_int("PC", 0)
+    meta:mark_as_private("PC")
+	meta:set_int("PR", 0)
+    meta:mark_as_private("PR")
+	meta:set_string("stack","")
+    meta:mark_as_private("stack")
 end
 
 
@@ -165,9 +166,32 @@ local function bot_turn_random(pos)
     end
 end
 
+local function position_bot(pos,newpos)
+    local meta = minetest.get_meta(pos)
+    local R = meta:get_int("steptime")
+    local bot_owner = meta:get_string("owner")
+    if not minetest.is_protected(newpos, bot_owner) then
+        local moveto_node = minetest.get_node(newpos)
+        if moveto_node.name == "air" then
+            local node = minetest.get_node(pos)
+            local hold = meta:to_table()
+            local elapsed = minetest.get_node_timer(pos):get_elapsed()
+            minetest.set_node(pos,{name="air"})
+            minetest.set_node(newpos,{name=node.name, param2=node.param2})
+            minetest.get_node_timer(newpos):set(1/R,0)
+            if hold then
+                minetest.get_meta(newpos):from_table(hold)
+            end
+        else
+            minetest.sound_play("error",{pos = newpos, gain = 10})
+        end
+        minetest.check_for_falling(newpos)
+    end
+end
+
+
 local function move_bot(pos,direction)
     local node = minetest.get_node(pos)
-    local meta = minetest.get_meta(pos)
     local dir = minetest.facedir_to_dir(node.param2)
     local newpos
     if direction == "u" then
@@ -179,26 +203,12 @@ local function move_bot(pos,direction)
     elseif direction == "b" then
         newpos = {x = pos.x+dir.x, y = pos.y, z = pos.z+dir.z}
     end
-    local bot_owner = meta:get_string("owner")
-    if not minetest.is_protected(newpos, bot_owner) then
-        if newpos then
-            local moveto_node = minetest.get_node(newpos)
-            if moveto_node.name == "air" then
-                local hold = meta:to_table()
-                local elapsed = minetest.get_node_timer(pos):get_elapsed()
-                minetest.set_node(pos,{name="air"})
-                minetest.set_node(newpos,{name=node.name, param2=node.param2})
-                minetest.get_node_timer(newpos):set(vbots.steptime,0)
-                if hold then
-                    minetest.get_meta(newpos):from_table(hold)
-                end
-            else
-                minetest.sound_play("error",{pos = newpos, gain = 10})
-            end
-            minetest.check_for_falling(newpos)
-        end
+    if newpos then
+        position_bot(pos,newpos)
     end
 end
+
+
 
 local function bot_dig(pos,digy)
     local meta = minetest.get_meta(pos)
@@ -240,20 +250,25 @@ local function bot_build(pos,buildy)
         local content = inv:get_list("main")
         local a = 1
         local found = nil
-        while( a<57 and not found) do
-            if not content[a]:is_empty() then
-                found = content[a]:get_name()
+        if content then
+            while( a<57 and not found) do
+
+                if content[a] and not content[a]:is_empty() then
+                    found = content[a]:get_name()
+                end
+                a=a+1
             end
-            a=a+1
-        end
-        if found then
-            -- print(found)
-            minetest.set_node(buildpos,{name=found})
+            if found then
+                -- print(found)
+                minetest.set_node(buildpos,{name=found})
+            end
         end
     end
 end
 
 local function bot_parsecommand(pos,item)
+    local meta = minetest.get_meta(pos)
+    local bot_owner = meta:get_string("owner")
     if item == "vbots:move_forward" then
         move_bot(pos,"f")
     elseif item == "vbots:move_backward" then
@@ -262,12 +277,25 @@ local function bot_parsecommand(pos,item)
         move_bot(pos,"u")
     elseif item == "vbots:move_down" then
         move_bot(pos,"d")
+    elseif item == "vbots:move_home" then
+        local newpos = minetest.deserialize(meta:get_string("home"))
+        if newpos then
+            position_bot(pos,newpos,bot_owner)
+        end
     elseif item == "vbots:turn_clockwise" then
         bot_turn_clockwise(pos)
     elseif item == "vbots:turn_anticlockwise" then
         bot_turn_anticlockwise(pos)
     elseif item == "vbots:turn_random" then
         bot_turn_random(pos)
+    elseif item == "vbots:mode_speed" then
+        local R = meta:get_int("repeat")
+        if R > 1 then
+            meta:set_int("repeat",0)
+            meta:set_int("steptime",R+1)
+        else
+            meta:set_int("steptime",1)
+        end
     elseif item == "vbots:mode_dig" then
         bot_dig(pos,0)
         move_bot(pos,"f")
@@ -286,7 +314,6 @@ local function bot_parsecommand(pos,item)
     end
     local item_parts = string.split(item,"_")
     if item_parts[1]=="vbots:run" then
-        local meta = minetest.get_meta(pos)
         local PC = meta:get_int("PC")
         local PR = meta:get_int("PR")
         local R = meta:get_int("repeat")

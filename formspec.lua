@@ -53,13 +53,13 @@ end
 
 local function panel_commands()
     local commands = {
-        {"move_forward","move_backward","move_up","move_down"},
+        {"move_forward","move_backward","move_up","move_down","move_home"},
         {"turn_clockwise","turn_anticlockwise","turn_random"},
         {"mode_dig_up","mode_dig","mode_dig_down"},
         {"mode_build_up","mode_build","mode_build_down"},
         --{"case_repeat","case_test","case_end","case_success","case_failure","case_yes","case_no" },
         --{"mode_examine","mode_pause","mode_wait"},
-        {},
+        {"mode_speed"},
         {"number_2","number_3","number_4","number_5"},
         {"number_6","number_7","number_8","number_9"},
         {"run_1","run_2","run_3","run_4","run_5","run_6"}

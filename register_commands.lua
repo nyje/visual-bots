@@ -21,6 +21,7 @@ register_command("move_forward","Move bot forward","vbots_move_forward.png")
 register_command("move_backward","Move bot backward","vbots_move_backward.png")
 register_command("move_up","Move bot up","vbots_move_up.png")
 register_command("move_down","Move bot down","vbots_move_down.png")
+register_command("move_home","Move bot to start position","vbots_move_home.png")
 
 register_command("turn_clockwise","Turn bot 90° clockwise","vbots_turn_clockwise.png")
 register_command("turn_anticlockwise","Move bot 90° anti-clockwise","vbots_turn_anticlockwise.png")
@@ -38,6 +39,7 @@ register_command("mode_build","Place a block behind the bot","vbots_mode_build.p
 register_command("mode_build_up","Place a block above the block behind the bot","vbots_mode_build_up.png")
 register_command("mode_build_down","Place a block below the block behind the bot","vbots_mode_build_down.png")
 
+register_command("mode_speed","set bot speed","vbots_mode_speed.png")
 register_command("mode_dig","Dig the block in front","vbots_mode_dig.png")
 register_command("mode_dig_up","Dig the block above the block in front","vbots_mode_dig_up.png")
 register_command("mode_dig_down","Dig the block below the block in front","vbots_mode_dig_down.png")
