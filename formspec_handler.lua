@@ -13,7 +13,9 @@ end
 minetest.register_on_player_receive_fields(function(player, bot_key, fields)
     --print(dump( fields))
     local bot_data = vbots.bot_info[bot_key]
+    -- Bot main formspec
     if bot_data then
+        print("Main Bot formspec received:")
         local inv=minetest.get_inventory({type="node", pos=bot_data.pos})
         local meta = minetest.get_meta(bot_data.pos)
         local meta_bot_key = meta:get_string("key")
@@ -69,6 +71,89 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
                     end
                 end
                 minetest.after(0.2, vbots.show_formspec, player, bot_data.pos)
+            end
+        end
+    else
+        local form_parts = string.split(bot_key,",")
+        local data = mod_storage:to_table()
+        local bot_list = {}
+        for n,d in pairs(data.fields) do
+            bot_list[#bot_list+1] = n
+        end
+        if #form_parts == 2 and form_parts[1] == "loadbot" then
+            print("Load Bot formspec received")
+            local bot_data = vbots.bot_info[form_parts[2]]
+            local pos=bot_data.pos
+            local meta = minetest.get_meta(pos)
+            local inv = meta:get_inventory()
+
+            minetest.close_formspec(player:get_player_name(), bot_key)
+            if fields.delete then
+                vbots.load(pos,player,"delete")
+            end
+            if fields.rename then
+                vbots.load(pos,player,"rename")
+            end
+            if fields.saved then
+                local bot_name = bot_list[tonumber(string.split(fields.saved,":")[2])]
+                print('Loadbot '..bot_name)
+                local inv_list = minetest.deserialize(data.fields[bot_name])
+                local inv_involved = {}
+                if inv_list then
+                    for _,v in pairs(inv_list) do
+                        local parts = string.split(v," ")
+                        if #parts == 3 then
+                            inv_involved[parts[1]]=true
+                        end
+                    end
+                    -- print(dump(inv_involved))
+                    local size
+                    for i,_ in pairs(inv_involved) do
+                        size = inv:get_size(i)
+                        for a=1,size do
+                            inv:set_stack(i,a, "")
+                        end
+                    end
+                    for _,v in pairs(inv_list) do
+                        local parts = string.split(v," ")
+                        if #parts == 3 then
+                            inv:add_item(parts[1],parts[2].." "..parts[3])
+                        end
+                    end
+                end
+            end
+        elseif #form_parts == 2 and form_parts[1] == "delete" then
+            print("Delete Bot formspec received")
+            local bot_data = vbots.bot_info[form_parts[2]]
+            local pos=bot_data.pos
+            minetest.close_formspec(player:get_player_name(), bot_key)
+            if fields.saved then
+                local bot_name = bot_list[tonumber(string.split(fields.saved,":")[2])]
+                data.fields[bot_name]=nil
+                mod_storage:from_table(data)
+            end
+        elseif #form_parts == 2 and form_parts[1] == "rename" then
+            print("Rename Bot formspec received")
+            local bot_data = vbots.bot_info[form_parts[2]]
+            local pos=bot_data.pos
+            minetest.close_formspec(player:get_player_name(), bot_key)
+            if fields.saved then
+                local bot_name = bot_list[tonumber(string.split(fields.saved,":")[2])]
+                vbots.load(pos,player,"renameto_"..bot_name)
+            end
+        elseif #form_parts == 2 and form_parts[1] == "renameto" then
+            print("Renameto formspec received")
+            local bot_data = vbots.bot_info[form_parts[2]]
+            local pos=bot_data.pos
+            minetest.close_formspec(player:get_player_name(), bot_key)
+            local oldname = fields.oldname
+            local newname = fields.newname
+            if newname and oldname then
+                local hold = data.fields[oldname]
+                data.fields[oldname] = nil
+                data.fields[newname] = hold
+                mod_storage:from_table(data)
+                print("renamed "..oldname.." to "..newname)
             end
         end
     end

@@ -16,7 +16,7 @@ local trashInv = minetest.create_detached_inventory(
                        end
                     })
 trashInv:set_size("main", 1)
-local mod_storage = minetest.get_mod_storage()
+mod_storage = minetest.get_mod_storage()
 
 
 vbots.save = function(pos)
@@ -34,60 +34,46 @@ vbots.save = function(pos)
     mod_storage:set_string(botname,minetest.serialize(inv_list))
 end
 
-vbots.load = function(pos,player)
+vbots.load = function(pos,player,mode)
+    local meta = minetest.get_meta(pos)
+    local key = meta:get_string("key")
     local data = mod_storage:to_table().fields
     local bot_list = ""
     for n,d in pairs(data) do
         bot_list = bot_list..n..","
     end
     bot_list = bot_list:sub(1,#bot_list-1)
-    local formspec = "size[5,9;]"..
-                     "textlist[0,0;5,9;saved;"..bot_list.."]"
-    local formname = "loadbot,"..pos.x..","..pos.y..","..pos.z
-    minetest.show_formspec(player:get_player_name(), formname, formspec)
+    local formspec
+    local formname
+    if not mode then
+        formspec = "size[5,9]"..
+                 "image_button_exit[4,0;1,1;vbots_gui_delete.png;delete;]"..
+                 "tooltip[4,0;1,1;delete]"..
+                 "image_button_exit[4,1;1,1;vbots_gui_rename.png;rename;]"..
+                 "tooltip[4,1;1,1;rename]"..
+                 "textlist[0,0;4,9;saved;"..bot_list.."]"
+        formname = "loadbot,"..key
+    elseif mode == "delete" then
+        formspec = "size[4,9]no_prepend[]"..
+                 "bgcolor[#F00]"..
+                 "textlist[0,0;4,9;saved;"..bot_list.."]"
+        formname = "delete,"..key
+    elseif mode == "rename" then
+        formspec = "size[4,9]no_prepend[]"..
+                 "bgcolor[#0F0]"..
+                 "textlist[0,0;4,9;saved;"..bot_list.."]"
+        formname = "rename,"..key
+    elseif mode:sub(1,8) == "renameto" then
+        local fromname = mode:sub(10)
+        formspec = "size[5,5]no_prepend[]"..
+                 "bgcolor[#00F]"..
+                 "field[0,0;5,2;oldname;Old Name;"..fromname.."]"..
+                 "field[0,1;5,4;newname;New Name;]"
+        formname = "renameto,"..key
+    end
+    minetest.after(0.2, minetest.show_formspec, player:get_player_name(), formname, formspec)
 end
 
-minetest.register_on_player_receive_fields(function(player, key, fields)
-    local form_pos = string.split(key,",")
-    if #form_pos == 4 and form_pos[1] == "loadbot" then
-        local pos={ x = form_pos[2], y = form_pos[3], z = form_pos[4] }
-        local meta = minetest.get_meta(pos)
-        local inv = meta:get_inventory()
-
-        local data = mod_storage:to_table().fields
-        local bot_list = {}
-        for n,d in pairs(data) do
-            bot_list[#bot_list+1] = n
-        end
-        minetest.close_formspec(player:get_player_name(), key)
-        if fields.saved then
-            local bot_name = bot_list[tonumber(string.split(fields.saved,":")[2])]
-            local inv_list = minetest.deserialize(data[bot_name])
-            local inv_involved = {}
-            if inv_list then
-                for _,v in pairs(inv_list) do
-                    local parts = string.split(v," ")
-                    if #parts == 3 then
-                        inv_involved[parts[1]]=true
-                    end
-                end
-                -- print(dump(inv_involved))
-                for i,_ in pairs(inv_involved) do
-                    size = inv:get_size(i)
-                    for a=1,size do
-                        inv:set_stack(i,a, "")
-                    end
-                end
-                for _,v in pairs(inv_list) do
-                    local parts = string.split(v," ")
-                    if #parts == 3 then
-                        inv:add_item(parts[1],parts[2].." "..parts[3])
-                    end
-                end
-            end
-        end
-    end
-end)
 
 -------------------------------------
 -- Generate 32 bit key for formspec identification
