@@ -39,18 +39,6 @@ end
 -------------------------------------
 -- Main panel generators
 -------------------------------------
-local function panel_botinv(pos)
-    return "list[nodemeta:" .. pos .. ";main;0,1;8,4;]"
-           .."listring[nodemeta:" .. pos .. ";main]"
-           ..highlight(0,1,8,4,"a","a","f")
-end
-
-local function panel_playerinv()
-    return "list[current_player;main;0,5;8,4;]"
-           .."listring[current_player;main]"
-           --..highlight(0,5,8,4,"a","f","a")
-end
-
 local function panel_commands()
     local commands = {
         {"move_forward","move_backward","move_up","move_down","move_home"},
@@ -76,7 +64,11 @@ local function panel_main(pos,mode)
     if mode == 0 then
         panel = panel_commands()
     else
-        panel = panel_playerinv() .. panel_botinv(pos)
+        panel = "list[current_player;main;0,5;8,4;]"..
+                "list[nodemeta:" .. pos .. ";main;0,1;8,4;]"..
+                "listring[current_player;main]"..
+                "listring[nodemeta:" .. pos .. ";main]"..
+                highlight(0,1,8,4,"a","a","f")
     end
     return panel
            ..button(0.5,0,"vbots_gui_commands.png","commands")
@@ -100,11 +92,11 @@ local function panel_code(pos,program)
 
            ..button(6.5,0,"vbots_gui_trash.png","trash")
            .."list[detached:bottrash;main;7.5,0;1,1;]"
-           .."listring[nodemeta:" .. pos .. ";p"..program.."]"
+--           .."listring[nodemeta:" .. pos .. ";p"..program.."]"
            ..highlight(6.5,0,2,1,"0","0","0")
 
            .."list[nodemeta:" .. pos .. ";p"..program..";8,1;7,8;]"
-           .."listring[nodemeta:" .. pos .. ";trash]"
+--           .."listring[detached:bottrash;main]"
            ..highlight(8,1,7,8,"f","a","f")
 
            ..button(15,1.5,"vbots_program_0.png","sub_0")

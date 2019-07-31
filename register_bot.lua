@@ -193,6 +193,16 @@ end
 
 
 local function move_bot(pos,direction)
+    local meta = minetest.get_meta(pos)
+    local bot_owner = meta:get_string("owner")
+    local player = minetest.get_player_by_name(bot_owner)
+    -- print(bot_owner)
+    local ppos
+    if player then
+        ppos = player:get_pos()
+        -- print(dump(pos))
+        -- print(dump(ppos))
+    end
     local node = minetest.get_node(pos)
     local dir = minetest.facedir_to_dir(node.param2)
     local newpos
@@ -207,6 +217,13 @@ local function move_bot(pos,direction)
     end
     if newpos then
         position_bot(pos,newpos)
+    end
+    if ppos then
+        if math.abs(ppos.x-pos.x)<2 and
+                math.abs(ppos.z-pos.z)<2 and
+                math.abs(ppos.y-pos.y)<2 then
+            player:setpos({x=newpos.x, y=newpos.y+1.1, z=newpos.z })
+        end
     end
 end
 
@@ -225,13 +242,21 @@ local function bot_dig(pos,digy)
     end
     if not minetest.is_protected(digpos, bot_owner) then
         local drop = minetest.get_node(digpos)
+        local drops = minetest.get_node_drops(drop.name, "default:pick_diamond")
         if drop.name ~= "air" then
             local inv=minetest.get_inventory({
                                     type="node",
                                     pos=pos
                                 })
-            local leftover = inv:add_item("main", ItemStack(drop.name))
+            for _, itemname in ipairs(drops) do
+                local leftover = inv:add_item("main", ItemStack(itemname))
+                if not leftover then
+                    minetest.sound_play("system-fault",{pos = newpos, gain = 10})
+                    vbots.bot_togglestate(pos,"off")
+                end
+            end
             minetest.set_node(digpos,{name="air"})
+            --minetest.dig_node(digpos)
         end
     else
         minetest.sound_play("system-fault",{pos = newpos, gain = 10})
@@ -240,23 +265,24 @@ end
 
 local function bot_build(pos,buildy)
     local meta = minetest.get_meta(pos)
+    local inv = meta:get_inventory()
     local bot_owner = meta:get_string("owner")
     local node = minetest.get_node(pos)
     local dir = minetest.facedir_to_dir(node.param2)
-    local inv=minetest.get_inventory({type="node", pos=pos})
     local buildpos
     if buildy == 0 then
         buildpos = {x = pos.x+dir.x, y = pos.y, z = pos.z+dir.z}
     else
         buildpos = {x = pos.x, y = pos.y+buildy, z = pos.z}
     end
-    if not minetest.is_protected(buildpos, bot_owner) then
+    local buildnode = minetest.get_node(buildpos)
+
+    if not minetest.is_protected(buildpos, bot_owner) and buildnode.name == "air" then
         local content = inv:get_list("main")
         local a = 1
         local found = nil
         if content then
-            while( a<57 and not found) do
-
+            while( a<33 and not found) do
                 if content[a] and not content[a]:is_empty() then
                     found = content[a]:get_name()
                 end
@@ -264,7 +290,10 @@ local function bot_build(pos,buildy)
             end
             if found then
                 -- print(found)
-                minetest.set_node(buildpos,{name=found})
+                local got = inv:remove_item("main",ItemStack(found))
+                if got:get_count() == 1 then
+                    minetest.set_node(buildpos,{name=found})
+                end
             end
         end
     else
@@ -346,8 +375,8 @@ local function punch_bot(pos,player)
 end
 
 local function bot_handletimer(pos)
-    local inv=minetest.get_inventory({type="node", pos=pos})
     local meta = minetest.get_meta(pos)
+    local inv = meta:get_inventory()
     local PC = meta:get_int("PC")
     local PR = meta:get_int("PR")
     local invname = "p"..PR
@@ -436,7 +465,13 @@ local function register_bot(node_name,node_desc,node_tiles,node_groups)
             return bot_handletimer(pos)
         end,
         can_dig = function(pos,player)
-            return interact(player,pos)
+            local meta = minetest.get_meta(pos)
+            local inv = meta:get_inventory()
+            local i = interact(player,pos)
+            if inv:is_empty("main") and i then
+                return true
+            end
+            return false
         end,
         on_destruct = function(pos)
             local meta = minetest.get_meta(pos)

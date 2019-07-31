@@ -15,7 +15,7 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
     local bot_data = vbots.bot_info[bot_key]
     -- Bot main formspec
     if bot_data then
-        print("Main Bot formspec received:")
+        -- print("Main Bot formspec received:")
         local inv=minetest.get_inventory({type="node", pos=bot_data.pos})
         local meta = minetest.get_meta(bot_data.pos)
         local meta_bot_key = meta:get_string("key")
@@ -70,7 +70,7 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
                         end
                     end
                 end
-                minetest.after(0.2, vbots.show_formspec, player, bot_data.pos)
+                minetest.after(0, vbots.show_formspec, player, bot_data.pos)
             end
         end
     else
@@ -81,7 +81,7 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
             bot_list[#bot_list+1] = n
         end
         if #form_parts == 2 and form_parts[1] == "loadbot" then
-            print("Load Bot formspec received")
+            -- print("Load Bot formspec received")
             local bot_data = vbots.bot_info[form_parts[2]]
             local pos=bot_data.pos
             local meta = minetest.get_meta(pos)
@@ -96,7 +96,7 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
             end
             if fields.saved then
                 local bot_name = bot_list[tonumber(string.split(fields.saved,":")[2])]
-                print('Loadbot '..bot_name)
+                -- print('Loadbot '..bot_name)
                 local inv_list = minetest.deserialize(data.fields[bot_name])
                 local inv_involved = {}
                 if inv_list then
@@ -123,7 +123,7 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
                 end
             end
         elseif #form_parts == 2 and form_parts[1] == "delete" then
-            print("Delete Bot formspec received")
+            -- print("Delete Bot formspec received")
             local bot_data = vbots.bot_info[form_parts[2]]
             local pos=bot_data.pos
             minetest.close_formspec(player:get_player_name(), bot_key)
@@ -133,7 +133,7 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
                 mod_storage:from_table(data)
             end
         elseif #form_parts == 2 and form_parts[1] == "rename" then
-            print("Rename Bot formspec received")
+            -- print("Rename Bot formspec received")
             local bot_data = vbots.bot_info[form_parts[2]]
             local pos=bot_data.pos
             minetest.close_formspec(player:get_player_name(), bot_key)
@@ -142,7 +142,7 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
                 vbots.load(pos,player,"renameto_"..bot_name)
             end
         elseif #form_parts == 2 and form_parts[1] == "renameto" then
-            print("Renameto formspec received")
+            -- print("Renameto formspec received")
             local bot_data = vbots.bot_info[form_parts[2]]
             local pos=bot_data.pos
             minetest.close_formspec(player:get_player_name(), bot_key)
@@ -153,7 +153,7 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
                 data.fields[oldname] = nil
                 data.fields[newname] = hold
                 mod_storage:from_table(data)
-                print("renamed "..oldname.." to "..newname)
+                -- print("renamed "..oldname.." to "..newname)
             end
         end
     end

@@ -25,9 +25,11 @@ vbots.save = function(pos)
     local botname = meta:get_string("name")
     local inv_list = {}
     for i,t in pairs(meta_table.inventory) do
-        for _,s in pairs(t) do
-            if s and s:get_count()>0 then
-                inv_list[#inv_list+1] = i.." "..s:get_name().." "..s:get_count()
+        if i ~= "main" then
+            for _,s in pairs(t) do
+                if s and s:get_count()>0 then
+                    inv_list[#inv_list+1] = i.." "..s:get_name().." "..s:get_count()
+                end
             end
         end
     end
