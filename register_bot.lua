@@ -186,6 +186,8 @@ local function position_bot(pos,newpos)
             minetest.sound_play("error",{pos = newpos, gain = 10})
         end
         minetest.check_for_falling(newpos)
+    else
+        minetest.sound_play("system-fault",{pos = newpos, gain = 10})
     end
 end
 
@@ -231,6 +233,8 @@ local function bot_dig(pos,digy)
             local leftover = inv:add_item("main", ItemStack(drop.name))
             minetest.set_node(digpos,{name="air"})
         end
+    else
+        minetest.sound_play("system-fault",{pos = newpos, gain = 10})
     end
 end
 
@@ -263,6 +267,8 @@ local function bot_build(pos,buildy)
                 minetest.set_node(buildpos,{name=found})
             end
         end
+    else
+        minetest.sound_play("system-fault",{pos = newpos, gain = 10})
     end
 end
 
