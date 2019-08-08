@@ -85,8 +85,7 @@ This pseudo command chooses the speed that the bot runs the program. when follow
 ![x9](/textures/vbots_number_9.png)
 The Multiplyers work the same for all commands except speed (explained above). For all other commands (including call sub-program commands) they make that command run multiple times.
 
-## Example
-
+## Example1
 
 ![forward](/textures/vbots_move_forward.png)
 ![x4](/textures/vbots_number_4.png)
@@ -99,13 +98,17 @@ The Multiplyers work the same for all commands except speed (explained above). F
 
 This program makes the bot move 4 spaces forward (if possible) then turn 180 degrees, move 4 spaces forward (ie back to the start position) and then turn 180 degrees again to face the initial direction.
 
-This can be simplified, In the dinosaur sub program put the following:
+## Example2 
+### (just example1 using a sub-program)
+
+In the dinosaur ![dinosaur](/textures/vbots_program_1.png) sub program put the following:
 ![forward](/textures/vbots_move_forward.png)
 ![x4](/textures/vbots_number_4.png)
 ![clockwise](/textures/vbots_turn_clockwise.png)
 ![x2](/textures/vbots_number_2.png)
 
-Then, in the main program ( the lion), just call it twice like this:
+
+Then, in the main ![lion](/textures/vbots_program_0.png) program ( the lion), just call it twice like this:
 ![dinosaur](/textures/vbots_run_1.png)
 ![x2](/textures/vbots_number_2.png)
 
