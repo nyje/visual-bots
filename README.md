@@ -28,7 +28,7 @@ This panel is used to add things to the bot's inventory (so it can build with th
 
 ![Main Menu 2](/images/doc_menu2.png)
 
-The trash ![Trash](/textures/vbots_gui_trash.png) icon, when pressed, deletes the last instruction on the current sub-program page. Bext to the icon is another 1x1 inventory slot which works as a trash can, anything dropped into it is destroyed.
+The trash ![Trash](/textures/vbots_gui_trash.png) icon, when pressed, deletes the last instruction on the current sub-program page. Next to this icon is another 1x1 inventory slot which works as a trash can, anything dropped into it is destroyed.
 
 The run ![run](/textures/vbots_gui_run.png) icon, works like punching the bot with an open hand, It starts the program runnng.
 
