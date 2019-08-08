@@ -61,9 +61,7 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
                         if nametable[1]=="move" or
                                 nametable[1]=="turn" or
                                 nametable[1]=="number" or
-                                nametable[1]=="climb" or
                                 nametable[1]=="mode" or
-                                nametable[1]=="case" or
                                 nametable[1]=="run" then
                             --print("COMMAND!!!!!!!")
                             local leftover = inv:add_item("p"..meta:get_int("program"), ItemStack("vbots:"..f))
