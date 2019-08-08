@@ -1,10 +1,11 @@
-Textures:
-=========
+Code & Everything not mentioned below is 
+(c) Nigel Garnett 2019 under the MIT licence.
+See: https://opensource.org/licenses/MIT
+
 Icon Images derived by scaling & editing from:
-    Game-icons.net
     https://game-icons.net
-    (All icons) Attribution 3.0 Unported (CC BY 3.0) licence.
-    https://creativecommons.org/licenses/by/3.0/
+    Attribution 3.0 Unported (CC BY 3.0) licence.
+    See: https://creativecommons.org/licenses/by/3.0/
     Attributions:
         "Check mark icon" by Delapoite
         "Processor icon" by Lorc
@@ -31,19 +32,9 @@ Icon Images derived by scaling & editing from:
         "Anticlockwise rotation icon" by Delapoite
         "Clockwise rotation icon" by Delapoite
 
-    Number Icons (c) Nigel Garnett 2019
-        Attribution 3.0 Unported (CC BY 3.0) licence.
-        https://creativecommons.org/licenses/by/3.0/
-
-Turtle image derived from
+Turtle texture derived from
     Mini Turtle 1.13 by neoshard
     Attribution 3.0 Unported (CC BY 3.0) licence.
     altered (current) version
     (c) Nigel Garnett
     Attribution 3.0 Unported (CC BY 3.0) licence.
-
-Code:
-=====
-Code created and (c) Nigel Garnett
-    Attribution 3.0 Unported (CC BY 3.0) licence.
-    https://creativecommons.org/licenses/by/3.0/
