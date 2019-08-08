@@ -23,6 +23,7 @@ vbots.save = function(pos)
     local meta = minetest.get_meta(pos)
     local meta_table = meta:to_table()
     local botname = meta:get_string("name")
+    local name = meta:get_string("owner")
     local inv_list = {}
     for i,t in pairs(meta_table.inventory) do
         if i ~= "main" then
@@ -34,7 +35,7 @@ vbots.save = function(pos)
             end
         end
     end
-    mod_storage:set_string(botname,minetest.serialize(inv_list))
+    mod_storage:set_string(name..",vbotsep,"..botname,minetest.serialize(inv_list))
 end
 
 vbots.load = function(pos,player,mode)
@@ -42,8 +43,12 @@ vbots.load = function(pos,player,mode)
     local key = meta:get_string("key")
     local data = mod_storage:to_table().fields
     local bot_list = ""
+    local parts
     for n,d in pairs(data) do
-        bot_list = bot_list..n..","
+        parts = string.split(n,",vbotsep,")
+        if #parts=2 and parts[1] == player:get_name() then
+            bot_list = bot_list..parts[2]..","
+        end
     end
     bot_list = bot_list:sub(1,#bot_list-1)
     local formspec
