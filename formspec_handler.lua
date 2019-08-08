@@ -129,6 +129,7 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
                 local bot_name = bot_list[tonumber(string.split(fields.saved,":")[2])]
                 data.fields[bot_name]=nil
                 mod_storage:from_table(data)
+                --print(dump(mod_storage:to_table()))
             end
         elseif #form_parts == 2 and form_parts[1] == "rename" then
             -- print("Rename Bot formspec received")
@@ -137,19 +138,26 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
             minetest.close_formspec(player:get_player_name(), bot_key)
             if fields.saved then
                 local bot_name = bot_list[tonumber(string.split(fields.saved,":")[2])]
-                vbots.load(pos,player,"renameto_"..bot_name)
+
+                parts = string.split(bot_name,",vbotsep,")
+                if #parts == 2 and parts[1] == player:get_player_name() then
+                    bot_name = parts[2]
+                    vbots.load(pos,player,"renamefrom_"..bot_name)
+                end
+
             end
         elseif #form_parts == 2 and form_parts[1] == "renameto" then
             -- print("Renameto formspec received")
             local bot_data = vbots.bot_info[form_parts[2]]
             local pos=bot_data.pos
-            minetest.close_formspec(player:get_player_name(), bot_key)
+            local pname = player:get_player_name()
+            minetest.close_formspec(pname, bot_key)
             local oldname = fields.oldname
             local newname = fields.newname
             if newname and oldname then
                 local hold = data.fields[oldname]
-                data.fields[oldname] = nil
-                data.fields[newname] = hold
+                data.fields[pname..",vbotsep,"..oldname] = nil
+                data.fields[pname..",vbotsep,"..newname] = hold
                 mod_storage:from_table(data)
                 -- print("renamed "..oldname.." to "..newname)
             end

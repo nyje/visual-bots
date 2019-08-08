@@ -46,7 +46,7 @@ vbots.load = function(pos,player,mode)
     local parts
     for n,d in pairs(data) do
         parts = string.split(n,",vbotsep,")
-        if #parts == 2 and parts[1] == player:get_name() then
+        if #parts == 2 and parts[1] == player:get_player_name() then
             bot_list = bot_list..parts[2]..","
         end
     end
@@ -55,6 +55,7 @@ vbots.load = function(pos,player,mode)
     local formname
     if not mode then
         formspec = "size[5,9]"..
+                 "image_button_exit[4,8;1,1;vbots_gui_check.png;ok;]"..
                  "image_button_exit[4,0;1,1;vbots_gui_delete.png;delete;]"..
                  "tooltip[4,0;1,1;delete]"..
                  "image_button_exit[4,1;1,1;vbots_gui_rename.png;rename;]"..
@@ -62,18 +63,21 @@ vbots.load = function(pos,player,mode)
                  "textlist[0,0;4,9;saved;"..bot_list.."]"
         formname = "loadbot,"..key
     elseif mode == "delete" then
-        formspec = "size[4,9]no_prepend[]"..
+        formspec = "size[5,9]no_prepend[]"..
+                 "image_button_exit[4,8;1,1;vbots_gui_check.png;ok;]"..
                  "bgcolor[#F00]"..
                  "textlist[0,0;4,9;saved;"..bot_list.."]"
         formname = "delete,"..key
     elseif mode == "rename" then
-        formspec = "size[4,9]no_prepend[]"..
+        formspec = "size[5,9]no_prepend[]"..
+                 "image_button_exit[4,8;1,1;vbots_gui_check.png;ok;]"..
                  "bgcolor[#0F0]"..
                  "textlist[0,0;4,9;saved;"..bot_list.."]"
         formname = "rename,"..key
-    elseif mode:sub(1,8) == "renameto" then
-        local fromname = mode:sub(10)
-        formspec = "size[5,5]no_prepend[]"..
+    elseif mode:sub(1,10) == "renamefrom" then
+        local fromname = mode:sub(12)
+        formspec = "size[6,6]no_prepend[]"..
+                 "image_button_exit[5,5;1,1;vbots_gui_check.png;ok;]"..
                  "bgcolor[#00F]"..
                  "field[0,0;5,2;oldname;Old Name;"..fromname.."]"..
                  "field[0,1;5,4;newname;New Name;]"
