@@ -1,15 +1,44 @@
 Textures:
 =========
-Images derived by scaling & editing from:
+Icon Images derived by scaling & editing from:
     Game-icons.net
     https://game-icons.net
-    Attribution 3.0 Unported (CC BY 3.0) licence.
+    (All icons) Attribution 3.0 Unported (CC BY 3.0) licence.
     https://creativecommons.org/licenses/by/3.0/
+    Attributions:
+        "Check mark icon" by Delapoite
+        "Processor icon" by Lorc
+        "Load icon" by Delapoite
+        "Save icon" by Delapoite
+        "Exit door icon" by Delapoite
+        "Button finger icon" by Delapoite
+        "Uncertainty icon" by Lorc
+        "Cancel icon" by sbed
+        "Trash can icon" by Delapoite
+        "Knapsack icon" by Lorc
+        "Tortoise icon" by Delapoite
+        "Cube icon" by Delapoite
+        "Dig dug icon" by Lorc
+        "Race car icon" by Skoll
+        "House icon" by Delapoite
+        "Lion icon" by Lorc
+        "Dinosaur Rex icon" by Lorc
+        "Goat icon" by Skoll
+        "Horse head icon" by Lorc
+        "Parrot head icon" by Lorc
+        "Bear head icon" by Delapoite
+        "Rhinoceros horn icon" by Delapoite
+        "Anticlockwise rotation icon" by Delapoite
+        "Clockwise rotation icon" by Delapoite
+
+    Number Icons (c) Nigel Garnett 2019
+        Attribution 3.0 Unported (CC BY 3.0) licence.
+        https://creativecommons.org/licenses/by/3.0/
 
 Turtle image derived from
     Mini Turtle 1.13 by neoshard
     Attribution 3.0 Unported (CC BY 3.0) licence.
-    alered (current) version
+    altered (current) version
     (c) Nigel Garnett
     Attribution 3.0 Unported (CC BY 3.0) licence.
 
