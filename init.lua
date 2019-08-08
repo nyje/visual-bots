@@ -27,7 +27,8 @@ vbots.save = function(pos)
     for i,t in pairs(meta_table.inventory) do
         if i ~= "main" then
             for _,s in pairs(t) do
-                if s and s:get_count()>0 then
+                local itemname = s:get_name()
+                if s and s:get_count()>0 and itemname:sub(1,5)=="vbots" then
                     inv_list[#inv_list+1] = i.." "..s:get_name().." "..s:get_count()
                 end
             end
