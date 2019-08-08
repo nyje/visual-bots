@@ -1,5 +1,6 @@
 # visual-bots
-## A minetest programmable bot by Nigel Garnett
+## A minetest programmable bot 
+### (c) 2019 Nigel Garnett
 Vbots are single block "turtle" style bots, programmable in an entirely visual way.
 They came into existence to amuse my 5 year old daughters, and teach them the basics
 of computer programming, without too much writing.
@@ -77,7 +78,7 @@ The node placed by the bot is the first thing found in the bot's inventory, star
 ### Special
 
 ![speed](/textures/vbots_mode_speed.png)
-This pseudo command chooses the speed that the bot runs the program. when followed by a number multiplyer it will make the bot run that many times faster. When NOT followed by a number, it resets the bot to normal speed.
+This pseudo command chooses the speed that the bot runs the program. when followed by a number multiplier it will make the bot run that many times faster. When NOT followed by a number, it resets the bot to normal speed.
 
 ### Multipliers
 
