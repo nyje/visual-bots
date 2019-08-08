@@ -46,7 +46,7 @@ vbots.load = function(pos,player,mode)
     local parts
     for n,d in pairs(data) do
         parts = string.split(n,",vbotsep,")
-        if #parts=2 and parts[1] == player:get_name() then
+        if #parts == 2 and parts[1] == player:get_name() then
             bot_list = bot_list..parts[2]..","
         end
     end
