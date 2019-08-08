@@ -61,6 +61,8 @@ Move the bot back to the position where the bot was placed. Note: the facing of 
 ![random](/textures/vbots_turn_random.png)
 These commands turn the bot clockwise, anticlockwise or in a random direction.
 
+### Actions
+
 ![dig up](/textures/vbots_mode_dig_up.png)
 ![dig down](/textures/vbots_mode_dig_down.png)
 ![dig](/textures/vbots_mode_dig.png)
@@ -72,8 +74,12 @@ These commands make the bot dig the node in that direction, and then move into t
 These commands make the bot place a block in the noted position (if protection allows and the position is empty).
 The node placed by the bot is the first thing found in the bot's inventory, starting from the first slot.
 
+### Special
+
 ![speed](/textures/vbots_mode_speed.png)
 This pseudo command chooses the speed that the bot runs the program. when followed by a number multiplyer it will make the bot run that many times faster. When NOT followed by a number, it resets the bot to normal speed.
+
+### Multipliers
 
 ![x2](/textures/vbots_number_2.png)
 ![x3](/textures/vbots_number_3.png)
@@ -83,7 +89,7 @@ This pseudo command chooses the speed that the bot runs the program. when follow
 ![x7](/textures/vbots_number_7.png)
 ![x8](/textures/vbots_number_8.png)
 ![x9](/textures/vbots_number_9.png)
-The Multiplyers work the same for all commands except speed (explained above). For all other commands (including call sub-program commands) they make that command run multiple times.
+The Multipliers work the same for all commands except speed (explained above). For all other commands (including call sub-program commands) they make that command run multiple times.
 
 ## Example1
 
