@@ -28,6 +28,17 @@ This panel is used to add things to the bot's inventory (so it can build with th
 
 ![Main Menu 2](/images/doc_menu2.png)
 
+The trash ![Trash](/textures/vbots_gui_trash.png) icon, when pressed, deletes the last instruction on the current sub-program page. Bext to the icon is another 1x1 inventory slot which works as a trash can, anything dropped into it is destroyed.
+
+The run ![run](/textures/vbots_gui_run.png) icon, works like punching the bot with an open hand, It starts the program runnng.
+
+The save ![save](/textures/vbots_gui_save.png) icon saves the current program & sub-programs under the name of the bot.
+
+the load ![load](/textures/vbots_gui_load.png) icon allows you to choose and load a program into the bot. Also on this menu are icons which allow the deleting & renaming of programs. 
+
 The sub-program panel (the red one on the right) has 7 pages.
 The ![Lion](/textures/vbots_program_0.png) icon is the page for the 'Main' program, execution starts here when the bot is activated.
 The other 6 pages are sub-programs which can be called via the 6 'run sub program' icons at the bottom of the command panel.
+
+## Commands
+Excepting the run sub program commands mentioned earlier, here is a list of the commands.
