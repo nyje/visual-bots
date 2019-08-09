@@ -81,7 +81,7 @@ vbots.load = function(pos,player,mode)
                  "bgcolor[#00F]"..
                  "field[0,0;5,2;oldname;Old Name;"..fromname.."]"..
                  "field[0,1;5,4;newname;New Name;]"
-        formname = "renameto,"..key
+        formname = "renamefrom,"..key
     end
     minetest.after(0.2, minetest.show_formspec, player:get_player_name(), formname, formspec)
 end
