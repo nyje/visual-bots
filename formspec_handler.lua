@@ -31,6 +31,9 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
             if fields.load then
                 vbots.load(bot_data.pos,player)
             end
+            if fields.reset then
+                vbots.wipe_programs(bot_data.pos)
+            end
             if fields.quit=="true" then
                 return
             end

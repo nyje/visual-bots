@@ -18,6 +18,95 @@ local trashInv = minetest.create_detached_inventory(
 trashInv:set_size("main", 1)
 mod_storage = minetest.get_mod_storage()
 
+local function bot_namer()
+    local first = {
+        "A", "An", "Ba", "Bi", "Bo", "Bom", "Bon", "Da", "Dan",
+        "Dar", "De", "Do", "Du", "Due", "Duer", "Dwa", "Fa", "Fal", "Fi",
+        "Fre", "Fun", "Ga", "Gal", "Gar", "Gam", "Gim", "Glo", "Go", "Gom",
+        "Gro", "Gwar", "Ib", "Jor", "Ka", "Ki", "Kil", "Lo", "Mar", "Na",
+        "Nal", "O", "Ras", "Ren", "Ro", "Ta", "Tar", "Tel", "Thi", "Tho",
+        "Thon", "Thra", "Tor", "Von", "We", "Wer", "Yen", "Yur"
+    }
+    local after = {
+        "bil", "bin", "bur", "char", "den", "dir", "dur", "fri", "fur", "in",
+        "li", "lin", "mil", "mur", "ni", "nur", "ran", "ri", "ril", "rimm", "rin",
+        "thur", "tri", "ulf", "un", "ur", "vi", "vil", "vim", "vin", "vri"
+    }
+    return first[math.random(#first)] ..
+           after[math.random(#after)] ..
+           after[math.random(#after)]
+end
+
+-------------------------------------
+-- Generate 32 bit key for formspec identification
+-------------------------------------
+function vbots.get_key()
+    math.randomseed(minetest.get_us_time())
+    local w = math.random()
+    local key = tostring( math.random(255) +
+            math.random(255) * 256 +
+            math.random(255) * 256*256 +
+            math.random(255) * 256*256*256 )
+    return key
+end
+-------------------------------------
+-- callback from bot node after_place_node
+-------------------------------------
+vbots.bot_init = function(pos, placer)
+    local bot_owner = placer:get_player_name()
+    local bot_name = bot_namer()
+    vbots.bot_info[bot_key] = { owner = bot_owner, pos = pos, name = bot_name}
+    local meta = minetest.get_meta(pos)
+	meta:set_string("infotext", bot_name .. " (" .. bot_owner .. ")")
+    local inv = meta:get_inventory()
+    for i,_ in pairs(inv_involved) do
+        size = inv:get_size(i)
+        for a=1,size do
+            inv:set_stack(i,a, "")
+        end
+    end
+    inv:set_size("p0", 56)
+    inv:set_size("p1", 56)
+    inv:set_size("p2", 56)
+    inv:set_size("p3", 56)
+    inv:set_size("p4", 56)
+    inv:set_size("p5", 56)
+    inv:set_size("p6", 56)
+    inv:set_size("main", 32)
+    inv:set_size("trash", 1)
+
+    meta:set_int("program",0)
+    meta:mark_as_private("program")
+    meta:set_string("home",minetest.serialize(pos))
+    meta:mark_as_private("home")
+    meta:set_int("panel",0)
+    meta:mark_as_private("panel")
+    meta:set_int("steptime",1)
+    meta:mark_as_private("steptime")
+    meta:set_string("key", bot_key)
+    meta:mark_as_private("key")
+	meta:set_string("owner", bot_owner)
+    meta:mark_as_private("owner")
+	meta:set_string("name", bot_name)
+    meta:mark_as_private("name")
+	meta:set_int("PC", 0)
+    meta:mark_as_private("PC")
+	meta:set_int("PR", 0)
+    meta:mark_as_private("PR")
+	meta:set_string("stack","")
+    meta:mark_as_private("stack")
+end
+
+vbots.wipe_programs = function(pos)
+    local meta = minetest.get_meta(pos)
+    local meta_table = meta:to_table()
+    local inv_list = {}
+    for i,t in pairs(meta_table.inventory) do
+        if i:sub(1) == "p" then
+            meta_table.inventory[i]=nil
+        end
+    end
+end
 
 vbots.save = function(pos)
     local meta = minetest.get_meta(pos)
@@ -87,18 +176,7 @@ vbots.load = function(pos,player,mode)
 end
 
 
--------------------------------------
--- Generate 32 bit key for formspec identification
--------------------------------------
-function vbots.get_key()
-    math.randomseed(minetest.get_us_time())
-    local w = math.random()
-    local key = tostring( math.random(255) +
-            math.random(255) * 256 +
-            math.random(255) * 256*256 +
-            math.random(255) * 256*256*256 )
-    return key
-end
+
 
 vbots.bot_togglestate = function(pos,mode)
     local meta = minetest.get_meta(pos)

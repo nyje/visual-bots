@@ -1,25 +1,6 @@
-
 -------------------------------------
 -- Cute 'unique' bot name generator
 -------------------------------------
-local function bot_namer()
-    local first = {
-        "A", "An", "Ba", "Bi", "Bo", "Bom", "Bon", "Da", "Dan",
-        "Dar", "De", "Do", "Du", "Due", "Duer", "Dwa", "Fa", "Fal", "Fi",
-        "Fre", "Fun", "Ga", "Gal", "Gar", "Gam", "Gim", "Glo", "Go", "Gom",
-        "Gro", "Gwar", "Ib", "Jor", "Ka", "Ki", "Kil", "Lo", "Mar", "Na",
-        "Nal", "O", "Ras", "Ren", "Ro", "Ta", "Tar", "Tel", "Thi", "Tho",
-        "Thon", "Thra", "Tor", "Von", "We", "Wer", "Yen", "Yur"
-    }
-    local after = {
-        "bil", "bin", "bur", "char", "den", "dir", "dur", "fri", "fur", "in",
-        "li", "lin", "mil", "mur", "ni", "nur", "ran", "ri", "ril", "rimm", "rin",
-        "thur", "tri", "ulf", "un", "ur", "vi", "vil", "vim", "vin", "vri"
-    }
-    return first[math.random(#first)] ..
-           after[math.random(#after)] ..
-           after[math.random(#after)]
-end
 
 local function push_state(pos,a,b,c)
     local meta = minetest.get_meta(pos)
@@ -48,51 +29,6 @@ local function pull_state(pos)
     end
 end
 
-
--------------------------------------
--- callback from bot node after_place_node
--------------------------------------
-local function bot_init(pos, placer)
-    local bot_key = vbots.get_key()
-    local bot_owner = placer:get_player_name()
-    local bot_name = bot_namer()
-    vbots.bot_info[bot_key] = { owner = bot_owner, pos = pos, name = bot_name}
-    local meta = minetest.get_meta(pos)
-	meta:set_string("infotext", bot_name .. " (" .. bot_owner .. ")")
-    local inv = meta:get_inventory()
-    inv:set_size("p0", 56)
-    inv:set_size("p1", 56)
-    inv:set_size("p2", 56)
-    inv:set_size("p3", 56)
-    inv:set_size("p4", 56)
-    inv:set_size("p5", 56)
-    inv:set_size("p6", 56)
-    inv:set_size("main", 32)
-    inv:set_size("trash", 1)
-
-    meta:set_int("program",0)
-    meta:mark_as_private("program")
-    meta:set_string("home",minetest.serialize(pos))
-    meta:mark_as_private("home")
-    meta:set_int("panel",0)
-    meta:mark_as_private("panel")
-    meta:set_int("steptime",1)
-    meta:mark_as_private("steptime")
-    meta:set_string("key", bot_key)
-    meta:mark_as_private("key")
-	meta:set_string("owner", bot_owner)
-    meta:mark_as_private("owner")
-	meta:set_string("name", bot_name)
-    meta:mark_as_private("name")
-	meta:set_int("PC", 0)
-    meta:mark_as_private("PC")
-	meta:set_int("PR", 0)
-    meta:mark_as_private("PR")
-	meta:set_string("stack","")
-    meta:mark_as_private("stack")
-end
-
-
 -------------------------------------
 -- callback from bot node can_dig
 -------------------------------------
@@ -106,7 +42,6 @@ local function interact(player,pos,isempty)
     end
     return false
 end
-
 
 -------------------------------------
 -- callback from bot node on_rightclick
@@ -227,8 +162,6 @@ local function move_bot(pos,direction)
         end
     end
 end
-
-
 
 local function bot_dig(pos,digy)
     local meta = minetest.get_meta(pos)
@@ -444,7 +377,7 @@ local function register_bot(node_name,node_desc,node_tiles,node_groups)
         light_source = 14,
         on_blast = function() end,
         after_place_node = function(pos, placer, itemstack, pointed_thing)
-            bot_init(pos, placer)
+            vbots.bot_init(pos, placer)
             local facing = minetest.dir_to_facedir(placer:get_look_dir())
             facing = (facing+2)%4
             facebot(facing,pos)
