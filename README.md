@@ -37,6 +37,8 @@ The save ![save](/textures/vbots_gui_save.png) icon saves the current program & 
 
 the load ![load](/textures/vbots_gui_load.png) icon allows you to choose and load a program into the bot. Also on this menu are icons which allow the deleting & renaming of programs. 
 
+The reset ![reset](/textures/vbots_gui_nuke.png) icon clears the main program, and all subprograms, but NOT the bot's inventory.
+
 The sub-program panel (the red one on the right) has 7 pages.
 The ![Lion](/textures/vbots_program_0.png) icon is the page for the 'Main' program, execution starts here when the bot is activated.
 The other 6 pages are sub-programs which can be called via the 6 'run sub program' icons at the bottom of the command panel.
