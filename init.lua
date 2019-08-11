@@ -55,16 +55,11 @@ end
 vbots.bot_init = function(pos, placer)
     local bot_owner = placer:get_player_name()
     local bot_name = bot_namer()
+    local bot_key = vbots.get_key()
     vbots.bot_info[bot_key] = { owner = bot_owner, pos = pos, name = bot_name}
     local meta = minetest.get_meta(pos)
 	meta:set_string("infotext", bot_name .. " (" .. bot_owner .. ")")
     local inv = meta:get_inventory()
-    for i,_ in pairs(inv_involved) do
-        size = inv:get_size(i)
-        for a=1,size do
-            inv:set_stack(i,a, "")
-        end
-    end
     inv:set_size("p0", 56)
     inv:set_size("p1", 56)
     inv:set_size("p2", 56)
@@ -100,10 +95,14 @@ end
 vbots.wipe_programs = function(pos)
     local meta = minetest.get_meta(pos)
     local meta_table = meta:to_table()
+    local inv = meta:get_inventory()
     local inv_list = {}
     for i,t in pairs(meta_table.inventory) do
-        if i:sub(1) == "p" then
-            meta_table.inventory[i]=nil
+        if i ~= "main" then
+            size = inv:get_size(i)
+            for a=1,size do
+                inv:set_stack(i,a, "")
+            end
         end
     end
 end
