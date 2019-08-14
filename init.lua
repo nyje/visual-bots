@@ -49,6 +49,23 @@ function vbots.get_key()
             math.random(255) * 256*256*256 )
     return key
 end
+
+-------------------------------------
+-- callback from bot node on_rightclick
+-------------------------------------
+vbots.bot_restore = function(pos)
+    local meta = minetest.get_meta(pos)
+    local bot_key = meta:get_string("key")
+    local bot_owner = meta:get_string("owner")
+    local bot_name = meta:get_string("name")
+    if not vbots.bot_info[bot_key] then
+        vbots.bot_info[bot_key] = { owner = bot_owner, pos = pos, name = bot_name}
+        meta:set_string("infotext", bot_name .. " (" .. bot_owner .. ")")
+        --print(dump(vbots.bot_info))
+    end
+end
+
+
 -------------------------------------
 -- callback from bot node after_place_node
 -------------------------------------
@@ -108,6 +125,7 @@ vbots.wipe_programs = function(pos)
 end
 
 vbots.save = function(pos)
+    vbots.bot_restore(pos)
     local meta = minetest.get_meta(pos)
     local meta_table = meta:to_table()
     local botname = meta:get_string("name")
@@ -127,6 +145,7 @@ vbots.save = function(pos)
 end
 
 vbots.load = function(pos,player,mode)
+    vbots.bot_restore(pos)
     local meta = minetest.get_meta(pos)
     local key = meta:get_string("key")
     local data = mod_storage:to_table().fields

@@ -43,20 +43,6 @@ local function interact(player,pos,isempty)
     return false
 end
 
--------------------------------------
--- callback from bot node on_rightclick
--------------------------------------
-local function bot_restore(pos)
-    local meta = minetest.get_meta(pos)
-    local bot_key = meta:get_string("key")
-    local bot_owner = meta:get_string("owner")
-    local bot_name = meta:get_string("name")
-    if not vbots.bot_info[bot_key] then
-        vbots.bot_info[bot_key] = { owner = bot_owner, pos = pos, name = bot_name}
-        meta:set_string("infotext", bot_name .. " (" .. bot_owner .. ")")
-        --print(dump(vbots.bot_info))
-    end
-end
 
 -------------------------------------
 -- Clean up bot table and bot storage
@@ -374,7 +360,7 @@ local function register_bot(node_name,node_desc,node_tiles,node_groups)
         paramtype2 = "facedir",
         legacy_facedir_simple = true,
         groups = node_groups,
-        light_source = 14,
+        --light_source = 14,
         on_blast = function() end,
         after_place_node = function(pos, placer, itemstack, pointed_thing)
             vbots.bot_init(pos, placer)
@@ -391,7 +377,7 @@ local function register_bot(node_name,node_desc,node_tiles,node_groups)
                 return 0
             end
             if interact(clicker,pos) then
-                bot_restore(pos)
+                vbots.bot_restore(pos)
                 minetest.after(0, vbots.show_formspec, clicker, pos)
             end
         end,
