@@ -161,9 +161,9 @@ local function bot_dig(pos,digy)
         digpos = {x = pos.x, y = pos.y+digy, z = pos.z}
     end
     if not minetest.is_protected(digpos, bot_owner) then
-        local drop = minetest.get_node(digpos)
-        local drops = minetest.get_node_drops(drop.name, "default:pick_diamond")
-        if drop.name ~= "air" then
+        local drop = minetest.get_node(digpos)		
+        local drops = minetest.registered_nodes[drop.name]
+        if drops.groups.not_in_creative_inventory~=1 then
             local inv=minetest.get_inventory({
                                     type="node",
                                     pos=pos
