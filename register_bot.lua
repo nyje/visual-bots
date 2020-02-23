@@ -87,13 +87,26 @@ local function bot_turn_random(pos)
     end
 end
 
+local function basically_empty(node)
+	def=minetest.registered_nodes[node.name]
+	--print(dump(def))
+	if node.name == "air" or
+			def.drawtype=="airlike" or
+			def.groups.not_in_creative_inventory==1 or
+			def.buildable_to==true then
+		return true
+	else
+		return false
+	end
+end
+
 local function position_bot(pos,newpos)
     local meta = minetest.get_meta(pos)
     local R = meta:get_int("steptime")
     local bot_owner = meta:get_string("owner")
     if not minetest.is_protected(newpos, bot_owner) then
         local moveto_node = minetest.get_node(newpos)
-        if moveto_node.name == "air" then
+        if basically_empty(moveto_node) then
             local node = minetest.get_node(pos)
             local hold = meta:to_table()
             local elapsed = minetest.get_node_timer(pos):get_elapsed()
@@ -189,7 +202,8 @@ local function bot_build(pos,buildy)
     local bot_owner = meta:get_string("owner")
     local node = minetest.get_node(pos)
     local dir = minetest.facedir_to_dir(node.param2)
-    local buildpos
+    local withblock = meta:get_string("withblock")
+	local buildpos
     if buildy == 0 then
         buildpos = {x = pos.x+dir.x, y = pos.y, z = pos.z+dir.z}
     else
@@ -197,15 +211,21 @@ local function bot_build(pos,buildy)
     end
     local buildnode = minetest.get_node(buildpos)
 
-    if not minetest.is_protected(buildpos, bot_owner) and buildnode.name == "air" then
+    if not minetest.is_protected(buildpos, bot_owner) and basically_empty(buildnode) then
         local content = inv:get_list("main")
         local a = 1
         local found = nil
         if content then
             while( a<33 and not found) do
-                if content[a] and not content[a]:is_empty() then
-                    found = content[a]:get_name()
-                end
+				if withblock then
+					if content[a] and content[a]:get_name()==withblock and not content[a]:is_empty() then
+						found = content[a]:get_name()
+					end
+				else
+					if content[a] and not content[a]:is_empty() then
+						found = content[a]:get_name()
+					end
+				end
                 a=a+1
             end
             if found then
@@ -217,7 +237,7 @@ local function bot_build(pos,buildy)
             end
         end
     else
-        minetest.sound_play("system-fault",{pos = newpos, gain = 10})
+        minetest.sound_play("system-fault",{pos = pos, gain = 10})
     end
 end
 
@@ -304,6 +324,13 @@ local function bot_handletimer(pos)
 
     local taken = inv:get_stack(invname, PC)
     local command = taken:get_name()
+
+	local blockname = inv:get_stack(invname, PC+1):get_name()
+	if string.split(blockname,":")[1]~="vbots" then
+		meta:set_string("withblock",blockname)
+	else
+		meta:set_string("withblock","")
+	end
 
     local todo = meta:get_int("repeat")
     if todo == 0 then
