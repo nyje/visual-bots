@@ -102,6 +102,7 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
                 local inv_involved = {}
                 if inv_list then
                     for _,v in pairs(inv_list) do
+						--print(dump(v))
                         local parts = string.split(v," ")
                         if #parts == 3 then
                             inv_involved[parts[1]]=true
@@ -115,11 +116,19 @@ minetest.register_on_player_receive_fields(function(player, bot_key, fields)
                             inv:set_stack(i,a, "")
                         end
                     end
+					local i={}
                     for _,v in pairs(inv_list) do
                         local parts = string.split(v," ")
+						if not i[parts[1]] then
+							i[parts[1]]=1
+						else
+							i[parts[1]]=i[parts[1]]+1
+						end
+						local stack=""
                         if #parts == 3 then
-                            inv:add_item(parts[1],parts[2].." "..parts[3])
-                        end
+							stack = parts[2].." "..parts[3]
+						end
+						inv:set_stack(parts[1], i[parts[1]], stack)
                     end
                 end
             end
