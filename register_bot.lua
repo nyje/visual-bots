@@ -183,10 +183,10 @@ local dump_inventory = function(
             local dump = "  DEBUG dumping stack " .. index .. " "
             if stack:is_empty(
             ) then
-                dump = dump + "empty"
+                dump = dump .. "empty"
             else
-                dump = dump + stack:get_name(
-                ) + " " + stack:get_count(
+                dump = dump .. stack:get_name(
+                ) .. " " .. stack:get_count(
                 )
             end
             print(
