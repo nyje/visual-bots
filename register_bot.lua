@@ -162,6 +162,40 @@ local function move_bot(pos,direction)
     end
 end
 
+local dump_inventory = function(
+    context,
+    dumped
+)
+    print(
+        "DEBUG dumping inventory " .. context
+    )
+    local lists = dumped:get_lists(
+    )
+    for name, stacks in pairs(
+        lists
+    ) do
+        print(
+            " DEBUG dumping list " .. name
+        )
+        for index, stack in pairs(
+            stacks
+        ) do
+            local dump = "  DEBUG dumping stack " .. index .. " "
+            if stack:is_empty(
+            ) then
+                dump = dump + "empty"
+            else
+                dump = dump + stack:get_name(
+                ) + " " + stack:get_count(
+                )
+            end
+            print(
+                dump
+            )
+        end
+    end
+end
+
 local function bot_dig(pos,digy)
     local meta = minetest.get_meta(pos)
     local bot_owner = meta:get_string("owner")
@@ -181,6 +215,10 @@ local function bot_dig(pos,digy)
                                     type="node",
                                     pos=pos
                                 })
+            dump_inventory(
+                "pre-dig " .. pos.x .. " " .. pos.y .. " " .. pos.z,
+                inv
+            )
             for _, itemname in ipairs(drops) do
                 local leftover = inv:add_item("main", ItemStack(itemname))
                 if not leftover then
@@ -188,6 +226,10 @@ local function bot_dig(pos,digy)
                     vbots.bot_togglestate(pos,"off")
                 end
             end
+            dump_inventory(
+                "post-dig",
+                inv
+            )
             minetest.set_node(digpos,{name="air"})
             --minetest.dig_node(digpos)
         end
@@ -213,6 +255,10 @@ local function bot_build(pos,buildy)
 
     if not minetest.is_protected(buildpos, bot_owner) and basically_empty(buildnode) then
         local content = inv:get_list("main")
+        dump_inventory(
+            "pre-build " .. pos.x .. " " .. pos.y .. " " .. pos.z,
+            inv
+        )
         local a = 1
         local found = nil
         if content then
@@ -236,6 +282,10 @@ local function bot_build(pos,buildy)
                 end
             end
         end
+        dump_inventory(
+            "post-build",
+            inv
+        )
     else
         minetest.sound_play("system-fault",{pos = pos, gain = 10})
     end
