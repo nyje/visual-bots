@@ -209,8 +209,9 @@ local function bot_dig(pos,digy)
     end
     if not minetest.is_protected(digpos, bot_owner) then
         local drop = minetest.get_node(digpos)		
-        local drops = minetest.registered_nodes[drop.name]
-        if drops.groups.not_in_creative_inventory~=1 then
+        local node_definition = minetest.registered_nodes[drop.name]
+        local drops = minetest.get_node_drops(drop.name)
+        if node_definition.groups.not_in_creative_inventory~=1 then
             local inv=minetest.get_inventory({
                                     type="node",
                                     pos=pos
@@ -220,6 +221,9 @@ local function bot_dig(pos,digy)
                 inv
             )
             for _, itemname in ipairs(drops) do
+                print(
+                    "DEBUG adding " .. itemname
+                )
                 local leftover = inv:add_item("main", ItemStack(itemname))
                 if not leftover then
                     minetest.sound_play("system-fault",{pos = newpos, gain = 10})
@@ -244,7 +248,7 @@ local function bot_build(pos,buildy)
     local bot_owner = meta:get_string("owner")
     local node = minetest.get_node(pos)
     local dir = minetest.facedir_to_dir(node.param2)
-    local withblock = meta:get_string("withblock")
+    local withblock = meta:get("withblock")
 	local buildpos
     if buildy == 0 then
         buildpos = {x = pos.x+dir.x, y = pos.y, z = pos.z+dir.z}
@@ -263,11 +267,20 @@ local function bot_build(pos,buildy)
         local found = nil
         if content then
             while( a<33 and not found) do
+                                print(
+                                    "DEBUG trying " .. a
+                                )
 				if withblock then
+					print(
+						"DEBUG withblock " .. withblock
+					)
 					if content[a] and content[a]:get_name()==withblock and not content[a]:is_empty() then
 						found = content[a]:get_name()
 					end
 				else
+					print(
+						"DEBUG not withblock"
+					)
 					if content[a] and not content[a]:is_empty() then
 						found = content[a]:get_name()
 					end
@@ -275,6 +288,9 @@ local function bot_build(pos,buildy)
                 a=a+1
             end
             if found then
+                print(
+                    "DEBUG building " .. found
+                )
                 -- print(found)
                 local got = inv:remove_item("main",ItemStack(found))
                 if got:get_count() == 1 then
