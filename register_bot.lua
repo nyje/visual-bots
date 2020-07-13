@@ -274,14 +274,14 @@ local function bot_build(pos,buildy)
 					print(
 						"DEBUG withblock " .. withblock
 					)
-					if content[a] and content[a]:get_name()==withblock and not content[a]:is_empty() then
+					if content[a] and content[a]:get_name()==withblock and not content[a]:is_empty() and minetest.registered_nodes[content[a]:get_name()] then
 						found = content[a]:get_name()
 					end
 				else
 					print(
 						"DEBUG not withblock"
 					)
-					if content[a] and not content[a]:is_empty() then
+					if content[a] and not content[a]:is_empty() and minetest.registered_nodes[content[a]:get_name()] then
 						found = content[a]:get_name()
 					end
 				end
