@@ -64,9 +64,6 @@ local function panel_main(pos,mode)
     if mode == 0 then
         panel = panel_commands()
     else
-        print(
-            "DEBUG inspecting nodemeta:" .. pos
-        )
         panel = "list[current_player;main;0,5;8,4;]"..
                 "list[nodemeta:" .. pos .. ";main;0,1;8,4;]"..
                 "listring[current_player;main]"..
