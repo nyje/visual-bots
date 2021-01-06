@@ -177,7 +177,8 @@ local function bot_dig(pos,digy)
         local drop = minetest.get_node(digpos)		
         local node_definition = minetest.registered_nodes[drop.name]
         local drops = minetest.get_node_drops(drop.name)
-        if node_definition.groups.not_in_creative_inventory~=1 then
+        if (node_definition.groups.not_in_creative_inventory~=1
+            or node_definition.drawtype == "plantlike") then
             local inv=minetest.get_inventory({
                                     type="node",
                                     pos=pos
