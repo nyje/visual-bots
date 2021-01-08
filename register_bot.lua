@@ -216,24 +216,68 @@ local function bot_build(pos,buildy)
         local content = inv:get_list("main")
         local a = 1
         local found = nil
+        local found_index
         if content then
             while( a<33 and not found) do
 				if withblock then
 					if content[a] and content[a]:get_name()==withblock and not content[a]:is_empty() and minetest.registered_nodes[content[a]:get_name()] then
 						found = content[a]:get_name()
+						found_index = a
 					end
 				else
 					if content[a] and not content[a]:is_empty() and minetest.registered_nodes[content[a]:get_name()] then
 						found = content[a]:get_name()
+						found_index = a
 					end
 				end
                 a=a+1
             end
             if found then
-                -- print(found)
-                local got = inv:remove_item("main",ItemStack(found))
-                if got:get_count() == 1 then
-                    minetest.set_node(buildpos,{name=found})
+                local under
+                if buildy == 0 then
+                    under = {
+                        x = buildpos.x,
+                        y = buildpos.y - 1,
+                        z = buildpos.z,
+                    }
+                else
+                    under = {
+                        x = buildpos.x + dir.x,
+                        y = buildpos.y,
+                        z = buildpos.z + dir.z,
+                    }
+                end
+                local under_node = minetest.get_node(
+                    under
+                )
+                if under_node.name == "air" then
+                    -- print(found)
+                    local got = inv:remove_item("main",ItemStack(found))
+                    if got:get_count() == 1 then
+                        minetest.set_node(buildpos,{name=found})
+                    end
+                else
+                    content[
+                        found_index
+                    ] = minetest.registered_nodes[
+                        found
+                    ].on_place(
+                        content[
+                            found_index
+                        ],
+                        minetest.get_player_by_name(
+                            bot_owner
+                        ),
+                        {
+                            type = "node",
+                            under = under,
+                            above = buildpos
+                        }
+                    )
+                    inv:set_list(
+                        "main",
+                        content
+                    )
                 end
             end
         end
